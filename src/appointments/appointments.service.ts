@@ -28,6 +28,7 @@ export class AppointmentsService {
       .find()
       .populate('patient')
       .populate('doctor')
+      .sort({ created_at: 'desc' })
       .exec();
   }
 

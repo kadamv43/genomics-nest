@@ -57,53 +57,8 @@ export class AppointmentsController {
   @Post('invoice-pdf/:id')
   async generatePdf(@Param('id') id: string, @Body() Body, @Res() res: Response) {
     // const data = await this.appointmentsService.findOne(id)
+    const data  = Body;
 
-    const data = {
-      _id: '66af48ef8b17f521dda20bef',
-      appointment_number: 'GENOMICS-00000031',
-      patient_id: '66af48ef8b17f521dda20bec',
-      appointment_date: '2024-08-04T09:23:59.784Z',
-      appointment_time: '2024-08-04T09:23:59.784Z',
-      services: [
-        {
-          _id: '66ada66c06e360ca18d0ef32',
-          name: 'Endoscopy',
-          price: '9000',
-          created_at: '2024-08-03T03:39:24.939Z',
-          updated_at: '2024-08-03T03:39:24.939Z',
-          __v: 0,
-        },
-        {
-          _id: '66adb1c5d082ba5950bb9540',
-          name: 'Surrogacy',
-          price: '5000',
-          created_at: '2024-08-03T04:27:49.805Z',
-          updated_at: '2024-08-03T04:27:49.805Z',
-          __v: 0,
-        },
-      ],
-      reason: 'test',
-      status: 'created',
-      created_at: '2024-08-04T09:25:03.407Z',
-      updated_at: '2024-08-04T09:25:03.407Z',
-      __v: 0,
-      patient: {
-        _id: '66af48ef8b17f521dda20bec',
-        first_name: 'vinayak',
-        last_name: 'kadam',
-        dob: '1993-07-13T18:30:00.000Z',
-        age: '31',
-        gender: 'Male',
-        blood_group: 'A+',
-        mobile: '8286538006',
-        email: 'kadamv43@gmail.com',
-        created_at: '2024-08-04T09:25:03.394Z',
-        updated_at: '2024-08-04T09:25:03.394Z',
-        __v: 0,
-      },
-      doctor: null,
-    };
-    console.log(data);
     try {
       const pdfBuffer = await this.pdfService.generatePdf(data);
       res.set({
