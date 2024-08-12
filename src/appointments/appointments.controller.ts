@@ -18,6 +18,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { Request } from 'express';
 import { DoctorsService } from 'src/doctors/doctors.service';
+import { Types } from 'mongoose';
 
 @Controller('appointments')
 export class AppointmentsController {
@@ -44,8 +45,9 @@ export class AppointmentsController {
       let doctor: any = await this.doctorService.findBy({
         user_id: req.user['userId'],
       });
-      return this.appointmentsService.findBy({ doctor: doctor.doctor_id });
-      //return this.appoin--=[[({ doctor: req.user['userId'] });
+      return await this.appointmentsService.findBy({
+        doctor: doctor._id,
+      });
     }
   }
 
@@ -55,9 +57,13 @@ export class AppointmentsController {
   }
 
   @Post('invoice-pdf/:id')
-  async generatePdf(@Param('id') id: string, @Body() Body, @Res() res: Response) {
+  async generatePdf(
+    @Param('id') id: string,
+    @Body() Body,
+    @Res() res: Response,
+  ) {
     // const data = await this.appointmentsService.findOne(id)
-    const data  = Body;
+    const data = Body;
 
     try {
       const pdfBuffer = await this.pdfService.generatePdf(data);
