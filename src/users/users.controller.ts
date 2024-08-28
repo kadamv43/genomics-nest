@@ -18,12 +18,12 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { EmailService } from 'src/email/email.service';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
-// @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private emailService:EmailService
+    private emailService: EmailService,
   ) {}
 
   @Post()
@@ -34,7 +34,6 @@ export class UsersController {
 
   @Get('/')
   findAll() {
-    console.log('ddd');
     return this.usersService.findAll();
   }
 
@@ -59,12 +58,12 @@ export class UsersController {
   }
 
   @Get('forgot-password/:id')
- async forgotPassword(@Param('id') id: string) {
+  async forgotPassword(@Param('id') id: string) {
     return this.usersService.forgotPasswordEmail(id);
   }
 
   @Post('reset-password/:id')
-  resetPassword(@Param('id') id: string,@Body() body: any) {
-    return this.usersService.resetPassword(id,body);
+  resetPassword(@Param('id') id: string, @Body() body: any) {
+    return this.usersService.resetPassword(id, body);
   }
 }

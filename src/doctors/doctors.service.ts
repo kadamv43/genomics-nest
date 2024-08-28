@@ -28,8 +28,9 @@ export class DoctorsService {
     return doctor;
   }
 
-  async findBy(query: Record<string, any>): Promise<Doctor> {
-    return this.doctorModel.findOne(query).exec();
+  async findBy(query: Record<string, any>): Promise<Doctor[]> {
+    return this.doctorModel.find(query).exec();
+
   }
 
   async update(id: string, updateDoctorDto: UpdateDoctorDto): Promise<Doctor> {

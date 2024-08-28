@@ -16,8 +16,12 @@ export class PatientsService {
     return createdPatient.save();
   }
 
-  async findAll(): Promise<Patient[]> {
-    return this.patientModel.find().exec();
+  async findAll(params) {
+    const size = params.size;
+    const skip = params.page * params.size;
+    const patients = await this.patientModel.find().skip(skip).limit(size).exec();
+    const totalRecords = await this.patientModel.countDocuments().exec();
+    return {data:patients,total: totalRecords};
   }
 
   async findOne(id: string): Promise<Patient> {

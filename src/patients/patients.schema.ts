@@ -26,14 +26,25 @@ export class Patient {
   @Prop({ required: true, unique: true })
   mobile: string;
 
-  @Prop({ required: false})
+  @Prop({ required: false })
   email: string;
 
-  @Prop({ required: false})
+  @Prop({ required: false })
   medical_history: string;
 
-  @Prop({ required: false })
-  allergies: string;
+  @Prop({
+    type: Object,
+    required: false,
+    _id: false,
+    properties: {
+      allergies: { type: Array, trim: true },
+      history: { type: Object, trim: true },
+    },
+  })
+  medical_history_info: {
+    allergies: [string];
+    history: [Object];
+  };
 
   @Prop({ default: Date.now })
   created_at: Date;

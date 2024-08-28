@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Appointment, AppointmentDocument } from './appointment.schema';
 import { Patient, PatientDocument } from 'src/patients/patients.schema';
 import { Doctor } from 'src/doctors/doctor.schema';
@@ -23,13 +23,55 @@ export class AppointmentsService {
     return createdAppointment.save();
   }
 
-  async findAll(): Promise<Appointment[]> {
-    return this.appointmentModel
-      .find()
+  async findAll(params) {
+
+     const size = params.size;
+     const skip = params.page * params.size;
+
+     delete params.size;
+     delete params.page;
+
+
+    if (params.from && params.to) {
+      const startDate = new Date(params.from);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(params.to);
+      endDate.setHours(23, 59, 59, 999);
+      params['created_at'] = {
+        $gte: startDate,
+        $lte: endDate,
+      };
+
+      delete params['from'];
+      delete params['to'];
+    } else {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+
+      params['created_at'] = {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      };
+    }
+
+
+    const appointments = await this.appointmentModel
+      .find(params)
       .populate('patient')
       .populate('doctor')
       .sort({ created_at: 'desc' })
+      .skip(skip).limit(size)
       .exec();
+
+      console.log(appointments.length)
+
+      const totalRecords = await this.appointmentModel
+        .countDocuments(params)
+        .exec();
+      return { data: appointments, total: totalRecords };
   }
 
   async findOne(id: string): Promise<any> {
@@ -43,20 +85,12 @@ export class AppointmentsService {
     if (!appointment) {
       throw new NotFoundException(`Appointment with ID ${id} not found`);
     }
-    
+
     return {
-      ...appointment.toObject()
+      ...appointment.toObject(),
     };
   }
 
-  async findBy(query: Record<string, any>): Promise<Appointment[]> {
-    return this.appointmentModel
-      .find(query)
-      .populate('patient')
-      .populate('doctor')
-      .populate('services')
-      .exec();
-  }
 
   async update(
     id: string,
@@ -64,6 +98,18 @@ export class AppointmentsService {
   ): Promise<Appointment> {
     return this.appointmentModel
       .findByIdAndUpdate(id, updateAppointmentDto, { new: true })
+      .exec();
+  }
+
+  async addFilesToAppointment(id: string, file: string): Promise<Appointment> {
+    return this.appointmentModel
+      .findByIdAndUpdate(
+        id,
+        {
+          $addToSet: { files: file },
+        },
+        { new: true }, // Returns the updated document
+      )
       .exec();
   }
 

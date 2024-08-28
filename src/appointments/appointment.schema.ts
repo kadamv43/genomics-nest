@@ -30,11 +30,17 @@ export class Appointment {
   @Prop({ required: true })
   appointment_time: string;
 
+  @Prop({ required: false })
+  files: string[];
+
   @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Product' }] })
   services: Product[];
 
   @Prop({ required: false })
   reason: string;
+
+  @Prop({ required: false })
+  remark: string;
 
   @Prop({ required: true, trim: true, default: 'Created' })
   status: string;

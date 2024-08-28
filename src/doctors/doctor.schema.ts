@@ -15,10 +15,22 @@ export class Doctor {
   last_name: string;
 
   @Prop({ required: false, trim: true })
+  mobile: string;
+
+  @Prop({ required: false, trim: true })
   specialization: string;
 
   @Prop({ required: true, unique: true, trim: true, lowercase: true })
   email: string;
+
+  @Prop({ required: false, trim: true })
+  gender: string;
+
+  @Prop({ required: false, trim: true })
+  blood_group: string;
+
+  @Prop({ required: false, trim: true })
+  dob: string;
 
   @Prop({
     type: Object,

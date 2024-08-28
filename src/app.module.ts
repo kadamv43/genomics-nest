@@ -13,7 +13,7 @@ import { PdfService } from './services/pdf/pdf.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { EmailModule } from './email/email.module';
-
+import { FileUploadService } from './services/file-upload/file-upload/file-upload.service';
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost/nest'),
@@ -27,9 +27,9 @@ import { EmailModule } from './email/email.module';
       rootPath: join(__dirname, '..', 'public/assets'), // Path to your static assets directory
       serveRoot: '/assets', // The base URL path to serve the assets
     }),
-    EmailModule,
+    EmailModule
   ],
   controllers: [AppController],
-  providers: [AppService, PdfService],
+  providers: [AppService, PdfService, FileUploadService],
 })
 export class AppModule {}

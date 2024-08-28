@@ -8,12 +8,16 @@ import {
   Put,
   Delete,
   Query,
+  UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { Patient } from './patients.schema';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('patients')
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
@@ -24,8 +28,8 @@ export class PatientsController {
   }
 
   @Get()
-  async findAll(): Promise<Patient[]> {
-    return this.patientsService.findAll();
+  async findAll(@Query() query: Record<string, any>) {
+    return this.patientsService.findAll(query);
   }
 
   @Get('search')
@@ -48,6 +52,14 @@ export class PatientsController {
     @Param('id') id: string,
     @Body() updatePatientDto: UpdatePatientDto,
   ): Promise<Patient> {
+    return this.patientsService.update(id, updatePatientDto);
+  }
+
+  @Patch(':id')
+  updatePartial(
+    @Param('id') id: string,
+    @Body() updatePatientDto: UpdatePatientDto,
+  ) {
     return this.patientsService.update(id, updatePatientDto);
   }
 

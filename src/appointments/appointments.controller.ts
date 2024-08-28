@@ -10,6 +10,9 @@ import {
   Res,
   UseGuards,
   Req,
+  UseInterceptors,
+  UploadedFile,
+  UploadedFiles,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment } from './appointment.schema';
@@ -18,14 +21,17 @@ import { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { Request } from 'express';
 import { DoctorsService } from 'src/doctors/doctors.service';
-import { Types } from 'mongoose';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileUploadService } from 'src/services/file-upload/file-upload/file-upload.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('appointments')
 export class AppointmentsController {
   constructor(
     private readonly appointmentsService: AppointmentsService,
     private doctorService: DoctorsService,
     private pdfService: PdfService,
+    private fileUploadSevice: FileUploadService,
   ) {}
 
   @Post()
@@ -36,24 +42,36 @@ export class AppointmentsController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
-  async findAll(@Req() req: Request) {
-    console.log(req.user);
+  async findAll(@Req() req: Request, @Query() query: Record<string, any>) {
     if (req.user['role'] == 'admin' || req.user['role'] == 'staff') {
-      return this.appointmentsService.findAll();
+      return this.appointmentsService.findAll(query);
     } else {
+      
       let doctor: any = await this.doctorService.findBy({
         user_id: req.user['userId'],
       });
-      return await this.appointmentsService.findBy({
-        doctor: doctor._id,
-      });
+
+      query.doctor = doctor._id
+      return await this.appointmentsService.findAll(query);
     }
   }
 
-  @Get('search')
-  async findBy(@Query() query: Record<string, any>): Promise<Appointment[]> {
-    return this.appointmentsService.findBy(query);
+
+  @Post('upload-files/:id')
+  @UseInterceptors(FilesInterceptor('files'))
+  async uploadFiles(
+    @Param('id') id: string,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
+    const filePaths = await this.fileUploadSevice.uploadFiles(files);
+    filePaths.forEach((item) => {
+      this.appointmentsService.addFilesToAppointment(id, item);
+    });
+
+    return {
+      message: 'Files uploaded successfully',
+      filePaths,
+    };
   }
 
   @Post('invoice-pdf/:id')
@@ -80,7 +98,7 @@ export class AppointmentsController {
       res.end(pdfBuffer);
     } catch (error) {
       console.log(error);
-      res.status(500).send('Could not generate PDF');
+      res.status(500).send(error);
     }
   }
 
