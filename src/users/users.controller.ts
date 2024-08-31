@@ -33,8 +33,8 @@ export class UsersController {
   }
 
   @Get('/')
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() query: Record<string, any>) {
+    return this.usersService.findAll(query);
   }
 
   @Get('search')

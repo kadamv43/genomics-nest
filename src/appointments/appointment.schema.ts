@@ -31,7 +31,7 @@ export class Appointment {
   appointment_time: string;
 
   @Prop({ required: false })
-  files: string[];
+  files:[{}];
 
   @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Product' }] })
   services: Product[];

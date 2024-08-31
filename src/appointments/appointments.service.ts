@@ -101,12 +101,12 @@ export class AppointmentsService {
       .exec();
   }
 
-  async addFilesToAppointment(id: string, file: string): Promise<Appointment> {
+  async addFilesToAppointment(id: string, file: string,file_name:string): Promise<Appointment> {
     return this.appointmentModel
       .findByIdAndUpdate(
         id,
         {
-          $addToSet: { files: file },
+          $addToSet: { files: {file_name,file }},
         },
         { new: true }, // Returns the updated document
       )

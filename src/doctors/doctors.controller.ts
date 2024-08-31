@@ -29,8 +29,8 @@ export class DoctorsController {
   }
 
   @Get()
-  async findAll() {
-    return this.doctorService.findAll();
+  async findAll(@Query() query: Record<string, any>) {
+    return this.doctorService.findAll(query);
   }
 
   @Get('search')

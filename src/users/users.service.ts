@@ -22,8 +22,35 @@ export class UsersService {
     return  (await createdUser.save())
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+  async findAll(params) {
+
+     const size = params.size;
+     const skip = params.page * params.size;
+
+     let query:any = {};
+     if (params.q) {
+       const regex = new RegExp(params.q, 'i'); // 'i' makes it case-insensitive
+       query = {
+         $or: [
+           { first_name: { $regex: regex } },
+           { last_name: { $regex: regex } },
+           { email: { $regex: regex } },
+           { mobile: { $regex: regex } },
+         ],
+       };
+     }
+
+     query = {...query, role: 'staff'};
+
+     console.log(query)
+     const users = await this.userModel
+       .find(query)
+       .skip(skip)
+       .limit(size)
+       .exec();
+     const totalRecords = await this.userModel.countDocuments().exec();
+     return { data: users, total: totalRecords };
+    // return this.userModel.find({role:'staff'}).exec();
   }
 
   async findOne(id: string): Promise<User> {

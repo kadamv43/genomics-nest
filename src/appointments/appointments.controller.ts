@@ -46,7 +46,7 @@ export class AppointmentsController {
     if (req.user['role'] == 'admin' || req.user['role'] == 'staff') {
       return this.appointmentsService.findAll(query);
     } else {
-      
+
       let doctor: any = await this.doctorService.findBy({
         user_id: req.user['userId'],
       });
@@ -61,11 +61,13 @@ export class AppointmentsController {
   @UseInterceptors(FilesInterceptor('files'))
   async uploadFiles(
     @Param('id') id: string,
+    @Body() body,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
+    let file_name = body.file_name
     const filePaths = await this.fileUploadSevice.uploadFiles(files);
     filePaths.forEach((item) => {
-      this.appointmentsService.addFilesToAppointment(id, item);
+      this.appointmentsService.addFilesToAppointment(id, item,file_name);
     });
 
     return {

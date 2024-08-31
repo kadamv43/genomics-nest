@@ -30,6 +30,9 @@ export class Patient {
   email: string;
 
   @Prop({ required: false })
+  reference_by: string;
+  
+  @Prop({ required: false })
   medical_history: string;
 
   @Prop({

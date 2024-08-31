@@ -19,9 +19,27 @@ export class PatientsService {
   async findAll(params) {
     const size = params.size;
     const skip = params.page * params.size;
-    const patients = await this.patientModel.find().skip(skip).limit(size).exec();
+
+    let query = {};
+    if (params.q) {
+      const regex = new RegExp(params.q, 'i'); // 'i' makes it case-insensitive
+      query = {
+        $or: [
+          { first_name: { $regex: regex } },
+          { last_name: { $regex: regex } },
+          { email: { $regex: regex } },
+          { mobile: { $regex: regex } },
+        ],
+      };
+    }
+
+    const patients = await this.patientModel
+      .find(query)
+      .skip(skip)
+      .limit(size)
+      .exec();
     const totalRecords = await this.patientModel.countDocuments().exec();
-    return {data:patients,total: totalRecords};
+    return { data: patients, total: totalRecords };
   }
 
   async findOne(id: string): Promise<Patient> {
