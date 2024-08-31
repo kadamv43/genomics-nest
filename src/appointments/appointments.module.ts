@@ -24,7 +24,7 @@ import { FileUploadService } from 'src/services/file-upload/file-upload/file-upl
     ProductsModule,
     MulterModule.register({
       storage: diskStorage({
-        destination: 'public/assets/uploads/',
+        destination: '../uploads/',
         filename: (req, file, callback) => {
           const filename = `${file.originalname}`;
           callback(null, filename);

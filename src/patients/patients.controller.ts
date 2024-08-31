@@ -10,12 +10,17 @@ import {
   Query,
   UseGuards,
   Patch,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { Patient } from './patients.schema';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as XLSX from 'xlsx';
+
 
 @UseGuards(JwtAuthGuard)
 @Controller('patients')
@@ -24,7 +29,8 @@ export class PatientsController {
 
   @Post()
   async create(@Body() createPatientDto: CreatePatientDto): Promise<Patient> {
-    let patient_number =  await this.patientsService.generateUniquePatientNumber()
+    let patient_number =
+      await this.patientsService.generateUniquePatientNumber();
     createPatientDto.patient_number = patient_number;
     return this.patientsService.create(createPatientDto);
   }
@@ -68,5 +74,18 @@ export class PatientsController {
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<Patient> {
     return this.patientsService.remove(id);
+  }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
+
+    await this.patientsService.importData(jsonData);
+
+    return { message: 'File uploaded and data saved successfully!' };
   }
 }

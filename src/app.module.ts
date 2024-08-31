@@ -15,8 +15,11 @@ import { join } from 'path';
 import { EmailModule } from './email/email.module';
 import { FileUploadService } from './services/file-upload/file-upload/file-upload.service';
 import { InvoiceModule } from './invoice/invoice.module';
+import { UploadsController } from './uploads/uploads.controller';
+import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     MongooseModule.forRoot('mongodb://localhost/nest'),
     AuthModule,
     AppointmentsModule,
@@ -31,7 +34,7 @@ import { InvoiceModule } from './invoice/invoice.module';
     EmailModule,
     InvoiceModule
   ],
-  controllers: [AppController],
+  controllers: [AppController, UploadsController],
   providers: [AppService, PdfService, FileUploadService],
 })
 export class AppModule {}
