@@ -7,6 +7,7 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 @Injectable()
 export class PatientsService {
+  prefix = "PATIENT-"
   constructor(
     @InjectModel(Patient.name) private readonly patientModel: Model<Patient>,
   ) {}
@@ -87,5 +88,25 @@ export class PatientsService {
         ],
       })
       .exec();
+  }
+
+  async generateUniquePatientNumber(): Promise<string> {
+    const lastPatient = await this.patientModel
+      .findOne()
+      .sort({ patient_number: -1 })
+      .exec();
+    let lastNumber = 0;
+
+    if (lastPatient && lastPatient?.patient_number) {
+      const lastNumberString = lastPatient.patient_number?.replace(
+        this.prefix,
+        '',
+      );
+      lastNumber = parseInt(lastNumberString, 10);
+    }
+
+    const nextNumber = lastNumber + 1;
+    const paddedNumber = nextNumber.toString().padStart(7, '0'); // Adjust length as needed
+    return `${this.prefix}${paddedNumber}`;
   }
 }

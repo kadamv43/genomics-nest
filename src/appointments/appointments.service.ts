@@ -25,6 +25,7 @@ export class AppointmentsService {
 
   async findAll(params) {
 
+    console.log(params)
      const size = params.size;
      const skip = params.page * params.size;
 
@@ -102,11 +103,14 @@ export class AppointmentsService {
   }
 
   async addFilesToAppointment(id: string, file: string,file_name:string): Promise<Appointment> {
+
+    let file_type = file.endsWith('.pdf') ? 'pdf' : 'image';
+    
     return this.appointmentModel
       .findByIdAndUpdate(
         id,
         {
-          $addToSet: { files: {file_name,file }},
+          $addToSet: { files: {file_name,file,file_type }},
         },
         { new: true }, // Returns the updated document
       )

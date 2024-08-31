@@ -7,4 +7,5 @@ export class CreatePatientDto {
   readonly phone: string;
   readonly address?: string;
   readonly medicalHistory?: string;
+  patient_number?:string
 }

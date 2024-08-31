@@ -6,6 +6,9 @@ export type PatientDocument = Patient & Document;
 @Schema()
 export class Patient {
   @Prop({ required: true, trim: true })
+  patient_number: string;
+
+  @Prop({ required: true, trim: true })
   first_name: string;
 
   @Prop({ required: true, trim: true })
@@ -31,7 +34,7 @@ export class Patient {
 
   @Prop({ required: false })
   reference_by: string;
-  
+
   @Prop({ required: false })
   medical_history: string;
 

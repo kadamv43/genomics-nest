@@ -7,4 +7,5 @@ export class UpdatePatientDto {
   readonly phone: string;
   readonly address?: string;
   readonly medicalHistory?: string;
+  patient_number?: string;
 }

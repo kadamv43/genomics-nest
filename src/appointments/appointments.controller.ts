@@ -47,11 +47,13 @@ export class AppointmentsController {
       return this.appointmentsService.findAll(query);
     } else {
 
+      // console.log(req)
       let doctor: any = await this.doctorService.findBy({
         user_id: req.user['userId'],
       });
 
-      query.doctor = doctor._id
+      // console.log(doctor);
+      query.doctor = doctor[0]._id
       return await this.appointmentsService.findAll(query);
     }
   }

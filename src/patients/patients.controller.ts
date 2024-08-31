@@ -24,6 +24,8 @@ export class PatientsController {
 
   @Post()
   async create(@Body() createPatientDto: CreatePatientDto): Promise<Patient> {
+    let patient_number =  await this.patientsService.generateUniquePatientNumber()
+    createPatientDto.patient_number = patient_number;
     return this.patientsService.create(createPatientDto);
   }
 
