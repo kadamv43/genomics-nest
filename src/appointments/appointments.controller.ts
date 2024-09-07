@@ -46,18 +46,16 @@ export class AppointmentsController {
     if (req.user['role'] == 'admin' || req.user['role'] == 'staff') {
       return this.appointmentsService.findAll(query);
     } else {
-
       // console.log(req)
       let doctor: any = await this.doctorService.findBy({
         user_id: req.user['userId'],
       });
 
       // console.log(doctor);
-      query.doctor = doctor[0]._id
+      query.doctor = doctor[0]._id;
       return await this.appointmentsService.findAll(query);
     }
   }
-
 
   @Post('upload-files/:id')
   @UseInterceptors(FilesInterceptor('files'))
@@ -66,10 +64,10 @@ export class AppointmentsController {
     @Body() body,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    let file_name = body.file_name
+    let file_name = body.file_name;
     const filePaths = await this.fileUploadSevice.uploadFiles(files);
     filePaths.forEach((item) => {
-      this.appointmentsService.addFilesToAppointment(id, item,file_name);
+      this.appointmentsService.addFilesToAppointment(id, item, file_name);
     });
 
     return {
@@ -81,29 +79,17 @@ export class AppointmentsController {
   @Post('invoice-pdf/:id')
   async generatePdf(
     @Param('id') id: string,
-    @Body() Body,
-    @Res() res: Response,
+    @Body() body,
+   
   ) {
-    // const data = await this.appointmentsService.findOne(id)
-    const data = Body;
+    const data = body;
 
-    try {
-      const pdfBuffer = await this.pdfService.generatePdf(data);
-      res.set({
-        // pdf
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename=pdf.pdf`,
-        'Content-Length': pdfBuffer.length,
-        // prevent cache
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        Pragma: 'no-cache',
-        Expires: 0,
-      });
-      res.end(pdfBuffer);
-    } catch (error) {
-      console.log(error);
-      res.status(500).send(error);
-    }
+    // const pdfBuffer = await this.pdfService.generatePdf(data);
+
+    
+      return await this.pdfService.saveHtmlFile(data);
+       
+    
   }
 
   @Get(':id')

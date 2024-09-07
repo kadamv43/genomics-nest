@@ -9,6 +9,6 @@ async function bootstrap() {
     allowedHeaders: 'Content-Type, Accept,Authorization',
     // credentials: true, // if you need to handle cookies
   });
-  await app.listen(3000);
+  await app.listen(process.env.PORT);
 }
 bootstrap();

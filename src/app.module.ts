@@ -17,10 +17,12 @@ import { FileUploadService } from './services/file-upload/file-upload/file-uploa
 import { InvoiceModule } from './invoice/invoice.module';
 import { UploadsController } from './uploads/uploads.controller';
 import { ConfigModule } from '@nestjs/config';
+import { ContactDetailsModule } from './contact-details/contact-details.module';
+import { BlogModule } from './blog/blog.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    MongooseModule.forRoot('mongodb://localhost/nest'),
+    MongooseModule.forRoot(process.env.DB),
     AuthModule,
     AppointmentsModule,
     UsersModule,
@@ -32,7 +34,9 @@ import { ConfigModule } from '@nestjs/config';
       serveRoot: '/assets', // The base URL path to serve the assets
     }),
     EmailModule,
-    InvoiceModule
+    InvoiceModule,
+    ContactDetailsModule,
+    BlogModule,
   ],
   controllers: [AppController, UploadsController],
   providers: [AppService, PdfService, FileUploadService],
