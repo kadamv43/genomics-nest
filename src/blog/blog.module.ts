@@ -5,6 +5,7 @@ import { Blog, BlogSchema } from './blog.schema';
 import { BlogController } from './blog.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Module({
   providers: [BlogService],
@@ -12,10 +13,15 @@ import { diskStorage } from 'multer';
     MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
     MulterModule.register({
       storage: diskStorage({
-        destination: process.env.UPLOAD_PATH,
+        destination: (req, file, cb) => {
+          const uploadPath = process.env.UPLOAD_PATH;
+          console.log(uploadPath);
+          cb(null, uploadPath);
+        },
         filename: (req, file, callback) => {
-          const filename = `${file.originalname}`;
-          callback(null, filename);
+          const fileExt = extname(file.originalname);
+          const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${fileExt}`;
+          callback(null, fileName);
         },
       }),
     }),

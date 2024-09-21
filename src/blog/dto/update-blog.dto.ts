@@ -3,5 +3,5 @@ export class UpdateBlogDto {
   readonly title: string;
   readonly description: string;
   readonly status: string;
-  readonly image?: string;
+  image?: string;
 }

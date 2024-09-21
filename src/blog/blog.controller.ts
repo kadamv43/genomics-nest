@@ -25,7 +25,7 @@ export class BlogController {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async createBlog(@Body() body, @UploadedFile() file: Express.Multer.File) {
-    let file_name = body.file_name;
+    body.image = file.filename;
     return this.blogService.createBlog(body);
   }
 
@@ -58,8 +58,10 @@ export class BlogController {
   updatePartial(
     @Param('id') id: string,
     @Body() updateDoctorDto: UpdateBlogDto,
+    @UploadedFile() file: Express.Multer.File,
   ) {
     console.log(updateDoctorDto);
+    updateDoctorDto.image = file.filename;
     return this.blogService.update(id, updateDoctorDto);
   }
 }
