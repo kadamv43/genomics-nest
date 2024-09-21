@@ -19,6 +19,8 @@ import { UploadsController } from './uploads/uploads.controller';
 import { ConfigModule } from '@nestjs/config';
 import { ContactDetailsModule } from './contact-details/contact-details.module';
 import { BlogModule } from './blog/blog.module';
+import { GalleryModule } from './gallery/gallery.module';
+import { BannersModule } from './banners/banners.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -37,6 +39,8 @@ import { BlogModule } from './blog/blog.module';
     InvoiceModule,
     ContactDetailsModule,
     BlogModule,
+    GalleryModule,
+    BannersModule
   ],
   controllers: [AppController, UploadsController],
   providers: [AppService, PdfService, FileUploadService],

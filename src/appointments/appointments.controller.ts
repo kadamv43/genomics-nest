@@ -16,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment } from './appointment.schema';
+import {CreateAppointmentWebDto} from './dto/create-appointment-web.dto'
 import { PdfService } from 'src/services/pdf/pdf.service';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
@@ -24,86 +25,88 @@ import { DoctorsService } from 'src/doctors/doctors.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileUploadService } from 'src/services/file-upload/file-upload/file-upload.service';
 
-@UseGuards(JwtAuthGuard)
-@Controller('appointments')
-export class AppointmentsController {
-  constructor(
-    private readonly appointmentsService: AppointmentsService,
-    private doctorService: DoctorsService,
-    private pdfService: PdfService,
-    private fileUploadSevice: FileUploadService,
-  ) {}
 
-  @Post()
-  async create(@Body() createAppointmentDto: Appointment) {
-    createAppointmentDto.appointment_number =
-      await this.appointmentsService.generateUniqueAppointmentNumber();
-    return this.appointmentsService.create(createAppointmentDto);
-  }
+ @UseGuards(JwtAuthGuard)
+ @Controller('appointments')
+ export class AppointmentsController {
+   constructor(
+     private readonly appointmentsService: AppointmentsService,
+     private doctorService: DoctorsService,
+     private pdfService: PdfService,
+     private fileUploadSevice: FileUploadService,
+   ) {}
 
-  @Get()
-  async findAll(@Req() req: Request, @Query() query: Record<string, any>) {
-    if (req.user['role'] == 'admin' || req.user['role'] == 'staff') {
-      return this.appointmentsService.findAll(query);
-    } else {
-      // console.log(req)
-      let doctor: any = await this.doctorService.findBy({
-        user_id: req.user['userId'],
-      });
+   @Post()
+   async create(@Body() createAppointmentDto: Appointment) {
+     createAppointmentDto.appointment_number =
+       await this.appointmentsService.generateUniqueAppointmentNumber();
+     return this.appointmentsService.create(createAppointmentDto);
+   }
 
-      // console.log(doctor);
-      query.doctor = doctor[0]._id;
-      return await this.appointmentsService.findAll(query);
-    }
-  }
+   @Post('web')
+   async createFromWeb(@Body() createAppointmentDto: CreateAppointmentWebDto) {
+     createAppointmentDto.appointment_number =
+       await this.appointmentsService.generateUniqueAppointmentNumber();
+     console.log(createAppointmentDto);
+     return this.appointmentsService.createFromWeb(createAppointmentDto);
+   }
 
-  @Post('upload-files/:id')
-  @UseInterceptors(FilesInterceptor('files'))
-  async uploadFiles(
-    @Param('id') id: string,
-    @Body() body,
-    @UploadedFiles() files: Array<Express.Multer.File>,
-  ) {
-    let file_name = body.file_name;
-    const filePaths = await this.fileUploadSevice.uploadFiles(files);
-    filePaths.forEach((item) => {
-      this.appointmentsService.addFilesToAppointment(id, item, file_name);
-    });
+   @Get()
+   async findAll(@Req() req: Request, @Query() query: Record<string, any>) {
+     if (req.user['role'] == 'admin' || req.user['role'] == 'staff') {
+       return this.appointmentsService.findAll(query);
+     } else {
+       // console.log(req)
+       let doctor: any = await this.doctorService.findBy({
+         user_id: req.user['userId'],
+       });
 
-    return {
-      message: 'Files uploaded successfully',
-      filePaths,
-    };
-  }
+       // console.log(doctor);
+       query.doctor = doctor[0]._id;
+       return await this.appointmentsService.findAll(query);
+     }
+   }
 
-  @Post('invoice-pdf/:id')
-  async generatePdf(
-    @Param('id') id: string,
-    @Body() body,
-   
-  ) {
-    const data = body;
+   @Post('upload-files/:id')
+   @UseInterceptors(FilesInterceptor('files'))
+   async uploadFiles(
+     @Param('id') id: string,
+     @Body() body,
+     @UploadedFiles() files: Array<Express.Multer.File>,
+   ) {
+     let file_name = body.file_name;
+     const filePaths = await this.fileUploadSevice.uploadFiles(files);
+     filePaths.forEach((item) => {
+       this.appointmentsService.addFilesToAppointment(id, item, file_name);
+     });
 
-    // const pdfBuffer = await this.pdfService.generatePdf(data);
+     return {
+       message: 'Files uploaded successfully',
+       filePaths,
+     };
+   }
 
-    
-      return await this.pdfService.saveHtmlFile(data);
-       
-    
-  }
+   @Post('invoice-pdf/:id')
+   async generatePdf(@Param('id') id: string, @Body() body) {
+     const data = body;
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.appointmentsService.findOne(id);
-  }
+     // const pdfBuffer = await this.pdfService.generatePdf(data);
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAppointmentDto: Appointment) {
-    return this.appointmentsService.update(id, updateAppointmentDto);
-  }
+     return await this.pdfService.saveHtmlFile(data);
+   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.appointmentsService.remove(id);
-  }
-}
+   @Get(':id')
+   findOne(@Param('id') id: string) {
+     return this.appointmentsService.findOne(id);
+   }
+
+   @Patch(':id')
+   update(@Param('id') id: string, @Body() updateAppointmentDto: Appointment) {
+     return this.appointmentsService.update(id, updateAppointmentDto);
+   }
+
+   @Delete(':id')
+   remove(@Param('id') id: string) {
+     return this.appointmentsService.remove(id);
+   }
+ }

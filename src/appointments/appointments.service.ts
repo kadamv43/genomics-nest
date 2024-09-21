@@ -5,6 +5,7 @@ import { Appointment, AppointmentDocument } from './appointment.schema';
 import { Patient, PatientDocument } from 'src/patients/patients.schema';
 import { Doctor } from 'src/doctors/doctor.schema';
 import { Product } from 'src/products/product.schema';
+import { CreateAppointmentWebDto } from './dto/create-appointment-web.dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -23,15 +24,20 @@ export class AppointmentsService {
     return createdAppointment.save();
   }
 
+  async createFromWeb(
+    createAppointmentDto: CreateAppointmentWebDto,
+  ): Promise<Appointment> {
+    const createdAppointment = new this.appointmentModel(createAppointmentDto);
+    return createdAppointment.save();
+  }
+
   async findAll(params) {
+    console.log(params);
+    const size = params.size;
+    const skip = params.page * params.size;
 
-    console.log(params)
-     const size = params.size;
-     const skip = params.page * params.size;
-
-     delete params.size;
-     delete params.page;
-
+    delete params.size;
+    delete params.page;
 
     if (params.from && params.to) {
       const startDate = new Date(params.from);
@@ -58,21 +64,21 @@ export class AppointmentsService {
       };
     }
 
-
     const appointments = await this.appointmentModel
       .find(params)
       .populate('patient')
       .populate('doctor')
       .sort({ created_at: 'desc' })
-      .skip(skip).limit(size)
+      .skip(skip)
+      .limit(size)
       .exec();
 
-      console.log(appointments.length)
+    console.log(appointments.length);
 
-      const totalRecords = await this.appointmentModel
-        .countDocuments(params)
-        .exec();
-      return { data: appointments, total: totalRecords };
+    const totalRecords = await this.appointmentModel
+      .countDocuments(params)
+      .exec();
+    return { data: appointments, total: totalRecords };
   }
 
   async findOne(id: string): Promise<any> {
@@ -92,7 +98,6 @@ export class AppointmentsService {
     };
   }
 
-
   async update(
     id: string,
     updateAppointmentDto: Appointment,
@@ -102,15 +107,18 @@ export class AppointmentsService {
       .exec();
   }
 
-  async addFilesToAppointment(id: string, file: string,file_name:string): Promise<Appointment> {
-
+  async addFilesToAppointment(
+    id: string,
+    file: string,
+    file_name: string,
+  ): Promise<Appointment> {
     let file_type = file.endsWith('.pdf') ? 'pdf' : 'image';
-    
+
     return this.appointmentModel
       .findByIdAndUpdate(
         id,
         {
-          $addToSet: { files: {file_name,file,file_type }},
+          $addToSet: { files: { file_name, file, file_type } },
         },
         { new: true }, // Returns the updated document
       )
