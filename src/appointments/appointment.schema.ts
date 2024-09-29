@@ -12,7 +12,7 @@ export class Appointment {
   @Prop({ required: true, trim: true })
   appointment_number: string;
 
-  @Prop({ required: true, trim: true })
+  @Prop({ required: false, trim: true })
   patient_id: string;
 
   @Prop({ required: false, trim: true })

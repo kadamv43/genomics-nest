@@ -12,6 +12,9 @@ import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { FileUploadService } from 'src/services/file-upload/file-upload/file-upload.service';
+import { Patient, PatientSchema } from 'src/patients/patients.schema';
+import { Product, ProductSchema } from 'src/products/product.schema';
+import { Doctor, DoctorSchema } from 'src/doctors/doctor.schema';
 
 
 @Module({
@@ -24,10 +27,15 @@ import { FileUploadService } from 'src/services/file-upload/file-upload/file-upl
     ProductsModule,
     MulterModule.register({
       storage: diskStorage({
-        destination: process.env.UPLOAD_PATH,
+        destination: (req, file, cb) => {
+          const uploadPath = process.env.UPLOAD_PATH+'appointment/';
+          console.log(uploadPath);
+          cb(null, uploadPath);
+        },
         filename: (req, file, callback) => {
-          const filename = `${file.originalname}`;
-          callback(null, filename);
+          const fileExt = extname(file.originalname);
+          const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${fileExt}`;
+          callback(null, fileName);
         },
       }),
     }),
@@ -39,5 +47,6 @@ import { FileUploadService } from 'src/services/file-upload/file-upload/file-upl
     DoctorsService,
     FileUploadService,
   ],
+  exports: [AppointmentsService],
 })
 export class AppointmentsModule {}

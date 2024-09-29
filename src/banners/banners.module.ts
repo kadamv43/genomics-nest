@@ -14,7 +14,7 @@ import { extname } from 'path';
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, cb) => {
-          const uploadPath = process.env.UPLOAD_PATH;
+          const uploadPath = process.env.UPLOAD_PATH + 'banners/';
           console.log(uploadPath)
           cb(null, uploadPath);
         },

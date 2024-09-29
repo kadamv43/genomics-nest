@@ -1,9 +1,13 @@
+import { Patient } from "src/patients/patients.schema";
+
 // src/patients/dto/create-patient.dto.ts
 export class CreateAppointmentWebDto {
-  readonly first_name: string;
-  readonly last_name: string;
-  readonly email: string;
-  readonly mobile: string;
-  readonly message: string;
-  appointment_number:string
+
+  appointment_number: string;
+  patient: Patient;
+  files?:[{}];
+  services?: [];
+  reason: string;
+  remark: string;
+  status: string;
 }

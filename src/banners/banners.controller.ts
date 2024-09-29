@@ -22,7 +22,7 @@ export class BannersController {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async createBlog(@Body() body, @UploadedFile() file: Express.Multer.File) {
-    body.image = file.filename;
+    body.image = 'banners/'+file.filename;
     return this.bannerService.createBlog(body);
   }
 
@@ -44,7 +44,7 @@ export class BannersController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (file) {
-      updateDoctorDto.image = file.filename;
+      updateDoctorDto.image = 'banners/' + file.filename;
     }
 
     return this.bannerService.update(id, updateDoctorDto);
@@ -63,7 +63,7 @@ export class BannersController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (file) {
-      updateDoctorDto.image = file.filename;
+      updateDoctorDto.image = 'banners/' + file.filename;
     }
     console.log(updateDoctorDto);
     return this.bannerService.update(id, updateDoctorDto);

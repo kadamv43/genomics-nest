@@ -21,6 +21,9 @@ import { ContactDetailsModule } from './contact-details/contact-details.module';
 import { BlogModule } from './blog/blog.module';
 import { GalleryModule } from './gallery/gallery.module';
 import { BannersModule } from './banners/banners.module';
+import { GalleryImagesModule } from './gallery-images/gallery-images.module';
+import { WebModule } from './web/web.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -40,7 +43,9 @@ import { BannersModule } from './banners/banners.module';
     ContactDetailsModule,
     BlogModule,
     GalleryModule,
-    BannersModule
+    BannersModule,
+    GalleryImagesModule,
+    WebModule,
   ],
   controllers: [AppController, UploadsController],
   providers: [AppService, PdfService, FileUploadService],

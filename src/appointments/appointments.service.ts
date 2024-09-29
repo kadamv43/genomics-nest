@@ -14,9 +14,6 @@ export class AppointmentsService {
   constructor(
     @InjectModel(Appointment.name)
     private appointmentModel: Model<AppointmentDocument>,
-    @InjectModel(Patient.name) private patientModel: Model<Patient>,
-    @InjectModel(Product.name) private productModel: Model<Product>,
-    @InjectModel(Doctor.name) private doctorModel: Model<Doctor>, // Inject PatientModel
   ) {}
 
   async create(createAppointmentDto: Appointment): Promise<Appointment> {
@@ -33,11 +30,15 @@ export class AppointmentsService {
 
   async findAll(params) {
     console.log(params);
+    const searchQuery = params.q ? { $regex: params.q, $options: 'i' } : null;
+    console.log("search",searchQuery)
+
     const size = params.size;
     const skip = params.page * params.size;
 
     delete params.size;
     delete params.page;
+    delete params.q
 
     if (params.from && params.to) {
       const startDate = new Date(params.from);
@@ -64,15 +65,35 @@ export class AppointmentsService {
       };
     }
 
-    const appointments = await this.appointmentModel
+    const queryM =  this.appointmentModel
       .find(params)
-      .populate('patient')
+      .populate({
+        path: 'patient',
+        match: searchQuery
+          ? {
+              $or: [
+                { first_name: searchQuery },
+                { last_name: searchQuery },
+                { patient_number: searchQuery },
+                { mobile: searchQuery },
+                // { _id: params.q },
+              ],
+            }
+          : {},
+      })
       .populate('doctor')
       .sort({ created_at: 'desc' })
       .skip(skip)
       .limit(size)
-      .exec();
+      // .exec();
 
+    // Log the raw query for debugging
+    console.log('Raw Query:', queryM.getQuery());
+    console.log('Query Options:', queryM.getOptions());
+    console.log('Full Query String:', queryM.toString());
+
+    // Execute the query
+    const appointments = await queryM.exec();
     console.log(appointments.length);
 
     const totalRecords = await this.appointmentModel

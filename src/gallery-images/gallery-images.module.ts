@@ -1,20 +1,22 @@
 import { Module } from '@nestjs/common';
-import { BlogService } from './blog.service';
+import { GalleryImagesController } from './gallery-images.controller';
+import { GalleryImagesService } from './gallery-images.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Blog, BlogSchema } from './blog.schema';
-import { BlogController } from './blog.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { GalleryImage, GalleryImageSchema } from './gallery-image.schema';
 import { extname } from 'path';
 
 @Module({
-  providers: [BlogService],
+  controllers: [GalleryImagesController],
   imports: [
-    MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
+    MongooseModule.forFeature([
+      { name: GalleryImage.name, schema: GalleryImageSchema },
+    ]),
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, cb) => {
-          const uploadPath = process.env.UPLOAD_PATH + 'blogs/';
+          const uploadPath = process.env.UPLOAD_PATH + 'gallery/';
           console.log(uploadPath);
           cb(null, uploadPath);
         },
@@ -26,6 +28,6 @@ import { extname } from 'path';
       }),
     }),
   ],
-  controllers: [BlogController],
+  providers: [GalleryImagesService],
 })
-export class BlogModule {}
+export class GalleryImagesModule {}

@@ -72,17 +72,28 @@ import { FileUploadService } from 'src/services/file-upload/file-upload/file-upl
    async uploadFiles(
      @Param('id') id: string,
      @Body() body,
-     @UploadedFiles() files: Array<Express.Multer.File>,
+     @UploadedFiles() files: Express.Multer.File[],
    ) {
-     let file_name = body.file_name;
-     const filePaths = await this.fileUploadSevice.uploadFiles(files);
-     filePaths.forEach((item) => {
-       this.appointmentsService.addFilesToAppointment(id, item, file_name);
+
+    //  let data: any = [];
+     files.forEach((item) => {
+      this.appointmentsService.addFilesToAppointment(
+        id,
+        'appointment/' + item.filename,
+        'report',
+      );
+      //  data.push({ id, image: 'appointment/' + item.filename });
      });
+
+    //  let file_name = body.file_name;
+    //  const filePaths = await this.fileUploadSevice.uploadFiles(files);
+    //  filePaths.forEach((item) => {
+      //  this.appointmentsService.addFilesToAppointment(id, item, file_name);
+    //  });
 
      return {
        message: 'Files uploaded successfully',
-       filePaths,
+      //  filePaths,
      };
    }
 

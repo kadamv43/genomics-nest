@@ -13,6 +13,12 @@ export class PatientsService {
   ) {}
 
   async create(createPatientDto: CreatePatientDto): Promise<Patient> {
+    const { mobile } = createPatientDto;
+    const existingPatient = await this.patientModel.findOne({ mobile }).exec();
+
+    if(existingPatient){
+      return existingPatient;
+    }
     const createdPatient = new this.patientModel(createPatientDto);
     return createdPatient.save();
   }
@@ -112,7 +118,7 @@ export class PatientsService {
 
   async importData(jsonData) {
     for (const data of jsonData) {
-      let patienNumber = await this.generateUniquePatientNumber()
+      let patienNumber = await this.generateUniquePatientNumber();
       const item = new this.patientModel({
         patient_number: patienNumber,
         first_name: data['first_name'],
