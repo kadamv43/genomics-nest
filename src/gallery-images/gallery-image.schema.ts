@@ -9,7 +9,7 @@ export type GalleryImageDocument = GalleryImage & Document;
 export class GalleryImage {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Gallery', required: true })
-  id: string;
+  gallery: string;
 
   @Prop({ required: true, trim: true })
   image: string;

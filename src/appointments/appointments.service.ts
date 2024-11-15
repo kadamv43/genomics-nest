@@ -6,6 +6,7 @@ import { Patient, PatientDocument } from 'src/patients/patients.schema';
 import { Doctor } from 'src/doctors/doctor.schema';
 import { Product } from 'src/products/product.schema';
 import { CreateAppointmentWebDto } from './dto/create-appointment-web.dto';
+import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -31,14 +32,14 @@ export class AppointmentsService {
   async findAll(params) {
     console.log(params);
     const searchQuery = params.q ? { $regex: params.q, $options: 'i' } : null;
-    console.log("search",searchQuery)
+    console.log('search', searchQuery);
 
     const size = params.size;
     const skip = params.page * params.size;
 
     delete params.size;
     delete params.page;
-    delete params.q
+    delete params.q;
 
     if (params.from && params.to) {
       const startDate = new Date(params.from);
@@ -65,7 +66,7 @@ export class AppointmentsService {
       };
     }
 
-    const queryM =  this.appointmentModel
+    const queryM = this.appointmentModel
       .find(params)
       .populate({
         path: 'patient',
@@ -84,8 +85,8 @@ export class AppointmentsService {
       .populate('doctor')
       .sort({ created_at: 'desc' })
       .skip(skip)
-      .limit(size)
-      // .exec();
+      .limit(size);
+    // .exec();
 
     // Log the raw query for debugging
     console.log('Raw Query:', queryM.getQuery());
@@ -108,6 +109,7 @@ export class AppointmentsService {
       .populate('patient')
       .populate('doctor')
       .populate('services')
+      .populate('invoice')
       .exec();
 
     if (!appointment) {
@@ -119,9 +121,19 @@ export class AppointmentsService {
     };
   }
 
+  async findByPatienId(id:string): Promise<Appointment[]> {
+    // console.log('mob',mobile)
+    return this.appointmentModel
+      .find({patient:id})
+      .populate('patient')
+      .sort({'created_at':'desc'})
+      .limit(5)
+      .exec();
+  }
+
   async update(
     id: string,
-    updateAppointmentDto: Appointment,
+    updateAppointmentDto: UpdateAppointmentDto,
   ): Promise<Appointment> {
     return this.appointmentModel
       .findByIdAndUpdate(id, updateAppointmentDto, { new: true })

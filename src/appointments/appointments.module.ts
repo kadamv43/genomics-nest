@@ -47,6 +47,6 @@ import { Doctor, DoctorSchema } from 'src/doctors/doctor.schema';
     DoctorsService,
     FileUploadService,
   ],
-  exports: [AppointmentsService],
+  exports: [AppointmentsService,MongooseModule],
 })
 export class AppointmentsModule {}

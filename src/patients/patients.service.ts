@@ -16,9 +16,12 @@ export class PatientsService {
     const { mobile } = createPatientDto;
     const existingPatient = await this.patientModel.findOne({ mobile }).exec();
 
+    console.log("ex",existingPatient)
+
     if(existingPatient){
       return existingPatient;
     }
+    createPatientDto.patient_number = await this.generateUniquePatientNumber();
     const createdPatient = new this.patientModel(createPatientDto);
     return createdPatient.save();
   }

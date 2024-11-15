@@ -47,9 +47,10 @@ export class Invoice {
     {
       name: { type: String, required: true },
       price: { type: Number, required: true },
+      type:{type:String,required:true}
     },
   ])
-  particulars: { name: string; price: number }[];
+  particulars: { name: string; price: number,type:string }[];
 
   @Prop({ default: Date.now })
   created_at: Date;

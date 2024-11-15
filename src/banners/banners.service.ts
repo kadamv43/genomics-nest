@@ -21,16 +21,11 @@ export class BannersService {
     const skip = params.page * params.size;
 
     let query = {};
-    if (params.q) {
-      const regex = new RegExp(params.q, 'i'); // 'i' makes it case-insensitive
-      query = {
-        $or: [
-          { first_name: { $regex: regex } },
-          { last_name: { $regex: regex } },
-          { email: { $regex: regex } },
-        ],
-      };
+
+    if (params.status) {
+      query = { status: params.status };
     }
+    console.log(params);
     const blogs = await this.blogModel
       .find(query)
       .skip(skip)
@@ -63,4 +58,3 @@ export class BannersService {
     }
   }
 }
-

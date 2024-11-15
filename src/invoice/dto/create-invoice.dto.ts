@@ -12,7 +12,7 @@ export class CreateInvoiceDto {
   readonly balance: number;
   readonly discount: number;
   readonly payment_mode: string;
-  readonly received_by: string;
+  received_by: string;
   readonly particulars: { name: string; price: number }[];
 }
 

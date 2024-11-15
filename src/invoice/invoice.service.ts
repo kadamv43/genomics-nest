@@ -14,35 +14,32 @@ export class InvoiceService {
   ) {}
 
   async create(createInvoiceDto: CreateInvoiceDto): Promise<Invoice> {
-    console.log(createInvoiceDto)
-    let invoiceExist:any = await this.findBy({
-      appointment: createInvoiceDto.appointment,
-    });
-    console.log(invoiceExist)
-    if (invoiceExist.length == 0) {
-      const newInvoice = new this.invoiceModel(createInvoiceDto);
-      return await newInvoice.save();
-    }
-     return await this.update(invoiceExist[0]?._id,createInvoiceDto);
+    console.log(createInvoiceDto);
+    await this.deleteManyByQuery({ appointment: createInvoiceDto.appointment });
+    const newInvoice = new this.invoiceModel(createInvoiceDto);
+    return await newInvoice.save();
   }
 
   async findAll(params) {
-     const size = params.size;
-     const skip = params.page * params.size;
-     const invoices = await this.invoiceModel
-       .find()
-       .populate('appointment')
-       .populate('patient')
-       .populate('doctor')
-       .skip(skip)
-       .limit(size)
-       .exec();
-     const totalRecords = await this.invoiceModel.countDocuments().exec();
-     return { data: invoices, total: totalRecords };
+    const size = params.size;
+    const skip = params.page * params.size;
+    const invoices = await this.invoiceModel
+      .find()
+      .populate('appointment')
+      .populate('patient')
+      .populate('doctor')
+      .skip(skip)
+      .limit(size)
+      .exec();
+    const totalRecords = await this.invoiceModel.countDocuments().exec();
+    return { data: invoices, total: totalRecords };
   }
 
   async findOne(id: string): Promise<Invoice> {
-    const invoice = await this.invoiceModel.findById(id).exec();
+    const invoice = await this.invoiceModel.findById(id)
+    .populate('doctor')
+    .populate('patient')
+    .exec();
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
     }
@@ -71,6 +68,12 @@ export class InvoiceService {
 
   async findBy(query: Record<string, any>): Promise<Invoice[]> {
     return this.invoiceModel.find(query).exec();
+  }
+
+  async deleteManyByQuery(
+    query: Record<string, any>,
+  ): Promise<{ deletedCount?: number }> {
+    return this.invoiceModel.deleteMany(query).exec();
   }
 
   async generateUniqueInvoiceNumber(): Promise<string> {

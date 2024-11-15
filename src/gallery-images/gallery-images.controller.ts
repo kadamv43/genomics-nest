@@ -1,10 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { GalleryImagesService } from './gallery-images.service';
 import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('gallery-images')
 export class GalleryImagesController {
   constructor(private readonly galleryImageService: GalleryImagesService) {}
+
+  @Get()
+  async findAll(@Query() query: Record<string, any>) {
+    return this.galleryImageService.findAll(query);
+  }
 
   @Post(':id')
   @UseInterceptors(FilesInterceptor('files'))
@@ -16,7 +21,7 @@ export class GalleryImagesController {
     console.log('id', id);
     let data: any = [];
     files.forEach((item) => {
-      data.push({ id, image: 'gallery/'+item.filename });
+      data.push({ gallery:id, image: 'gallery/' + item.filename });
     });
     return this.galleryImageService.createBlog(data);
   }

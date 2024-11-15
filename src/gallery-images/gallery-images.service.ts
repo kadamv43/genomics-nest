@@ -18,22 +18,12 @@ export class GalleryImagesService {
   }
 
   async findAll(params) {
-    const size = params.size;
-    const skip = params.page * params.size;
-
-    let query = {};
-    if (params.q) {
-      const regex = new RegExp(params.q, 'i'); // 'i' makes it case-insensitive
-      query = {
-        $or: [
-          { first_name: { $regex: regex } },
-          { last_name: { $regex: regex } },
-          { email: { $regex: regex } },
-        ],
-      };
-    }
+    const size = params?.size ?? 100;
+    const skip = params.page ? params.page * params.size : 0;
+   
     const blogs = await this.blogModel
-      .find(query)
+      .find()
+      .populate('gallery')
       .skip(skip)
       .limit(size)
       .exec();
@@ -42,7 +32,7 @@ export class GalleryImagesService {
   }
 
   async getImagesByGalleryId(id: string) {
-    return this.blogModel.find({id:id}).exec();
+    return this.blogModel.find({gallery:id}).exec();
   }
 
   async update(

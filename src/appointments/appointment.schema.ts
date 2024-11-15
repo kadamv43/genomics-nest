@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Doctor } from 'src/doctors/doctor.schema';
+import { Invoice } from 'src/invoice/invoice.schema';
 import { Patient } from 'src/patients/patients.schema';
 import { Product } from 'src/products/product.schema';
 
@@ -31,7 +32,7 @@ export class Appointment {
   appointment_time: string;
 
   @Prop({ required: false })
-  files:[{}];
+  files: [{}];
 
   @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Product' }] })
   services: Product[];
@@ -39,8 +40,8 @@ export class Appointment {
   @Prop({ required: false })
   reason: string;
 
-  @Prop({ required: false })
-  remark: string;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Invoice', required: false })
+  invoice: Invoice;
 
   @Prop({ required: true, trim: true, default: 'Created' })
   status: string;
