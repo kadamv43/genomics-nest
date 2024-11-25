@@ -13,28 +13,12 @@ async function bootstrap() {
   const allowedOrigins = [
     'http://localhost:4300',
     'http://localhost:8100',
+    'https://localhost',
     'http://localhost:4200', // Localhost for development
   ];
 
 
-  app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin) {
-        // Allow requests with no origin (like mobile apps or CURL requests)
-        return callback(null, true);
-      }
-      if (allowedOrigins.includes(origin)) {
-        // Origin is allowed
-        return callback(null, true);
-      } else {
-        // Origin is not allowed
-        return callback(new Error('Not allowed by CORS'));
-      }
-    }, // Replace with your allowed origin
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Accept,Authorization,enctype',
-    // credentials: true, // if you need to handle cookies
-  });
+  app.enableCors();
   await app.listen(process.env.PORT);
 }
 bootstrap();

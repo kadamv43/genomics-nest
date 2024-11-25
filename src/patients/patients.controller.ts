@@ -12,6 +12,7 @@ import {
   Patch,
   UploadedFile,
   UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
@@ -20,12 +21,17 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
-
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 @UseGuards(JwtAuthGuard)
 @Controller('patients')
 export class PatientsController {
-  constructor(private readonly patientsService: PatientsService) {}
+  prefix = 'PATIENT-';
+  constructor(
+    private readonly patientsService: PatientsService,
+    private httpService: HttpService,
+  ) {}
 
   @Post()
   async create(@Body() createPatientDto: CreatePatientDto): Promise<Patient> {
@@ -48,6 +54,48 @@ export class PatientsController {
   @Get('global-search')
   async globalSearch(@Query('q') query: string): Promise<Patient[]> {
     return this.patientsService.globalSearch(query);
+  }
+
+  @Post('import-excel')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadExcel(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
+    let patient_number =
+      await this.patientsService.generateUniquePatientNumber();
+
+    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(sheet);
+    console.log(jsonData.length);
+    const data = jsonData?.map((item: any) => {
+      patient_number = this.increamentPatientNumber(patient_number);
+      // console.log(patient_number);
+      let first_name = '';
+      let husband_name = '';
+      let last_name = '';
+      let name = item?.patient_name?.split(' ');
+      // console.log(name)
+      if (name.length == 2) {
+        first_name = name[0];
+        last_name = name[1];
+        husband_name = '';
+      } else if (name.length > 2) {
+        first_name = name[0];
+        husband_name = name[1];
+        last_name = name[2];
+      }
+
+      if (name.length > 0) {
+        return { ...item, first_name, husband_name, last_name, patient_number };
+      }
+    });
+    //  console.log(data);
+    // Insert data into MongoDB
+    return await this.patientsService.insertData(data);
   }
 
   @Get(':id')
@@ -76,16 +124,16 @@ export class PatientsController {
     return this.patientsService.remove(id);
   }
 
-  @Post('import')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
+  increamentPatientNumber(lastPatient) {
+    let lastNumber = 0;
 
-    await this.patientsService.importData(jsonData);
+    if (lastPatient && lastPatient) {
+      const lastNumberString = lastPatient?.replace(this.prefix, '');
+      lastNumber = parseInt(lastNumberString, 10);
+    }
 
-    return { message: 'File uploaded and data saved successfully!' };
+    const nextNumber = lastNumber + 1;
+    const paddedNumber = nextNumber.toString().padStart(7, '0'); // Adjust length as needed
+    return `${this.prefix}${paddedNumber}`;
   }
 }

@@ -2,11 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Appointment, AppointmentDocument } from './appointment.schema';
-import { Patient, PatientDocument } from 'src/patients/patients.schema';
-import { Doctor } from 'src/doctors/doctor.schema';
-import { Product } from 'src/products/product.schema';
 import { CreateAppointmentWebDto } from './dto/create-appointment-web.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { PatientsService } from 'src/patients/patients.service';
 
 @Injectable()
 export class AppointmentsService {
@@ -15,6 +13,7 @@ export class AppointmentsService {
   constructor(
     @InjectModel(Appointment.name)
     private appointmentModel: Model<AppointmentDocument>,
+    private patientService: PatientsService,
   ) {}
 
   async create(createAppointmentDto: Appointment): Promise<Appointment> {
@@ -31,74 +30,55 @@ export class AppointmentsService {
 
   async findAll(params) {
     console.log(params);
-    const searchQuery = params.q ? { $regex: params.q, $options: 'i' } : null;
-    console.log('search', searchQuery);
+    const { page, size, q, from, to, status } = params;
+    const skip = page * size;
 
-    const size = params.size;
-    const skip = params.page * params.size;
+    let query = {};
 
-    delete params.size;
-    delete params.page;
-    delete params.q;
-
-    if (params.from && params.to) {
-      const startDate = new Date(params.from);
-      startDate.setHours(0, 0, 0, 0);
-      const endDate = new Date(params.to);
-      endDate.setHours(23, 59, 59, 999);
-      params['created_at'] = {
+    if (from && !to) {
+      const startDate = new Date(from).toISOString()
+      query['appointment_date'] = {
         $gte: startDate,
-        $lte: endDate,
-      };
-
-      delete params['from'];
-      delete params['to'];
-    } else {
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const endOfDay = new Date();
-      endOfDay.setHours(23, 59, 59, 999);
-
-      params['created_at'] = {
-        $gte: startOfDay,
-        $lte: endOfDay,
+        $lt: this.getEndDate(startDate),
       };
     }
 
+    if (from && to) {
+      const startDate = new Date(from).toISOString();
+      const endDate = this.getEndDate(new Date(to).toISOString()); ;
+      query['appointment_date'] = {
+        $gte: startDate,
+        $lt: endDate,
+      };
+    }
+
+    if (status) {
+      query['status'] = status;
+    }
+
+    if (q) {
+      const patientData = await this.patientService.globalSearch(q);
+      const patient_ids = patientData.map((item: any) => item?._id);
+      console.log('patient', patientData);
+      query['patient'] = { $in: patient_ids };
+    }
+
+    console.log('q', query);
+
     const queryM = this.appointmentModel
-      .find(params)
-      .populate({
-        path: 'patient',
-        match: searchQuery
-          ? {
-              $or: [
-                { first_name: searchQuery },
-                { last_name: searchQuery },
-                { patient_number: searchQuery },
-                { mobile: searchQuery },
-                // { _id: params.q },
-              ],
-            }
-          : {},
-      })
+      .find(query)
+      .populate('patient')
       .populate('doctor')
       .sort({ created_at: 'desc' })
       .skip(skip)
       .limit(size);
     // .exec();
 
-    // Log the raw query for debugging
-    console.log('Raw Query:', queryM.getQuery());
-    console.log('Query Options:', queryM.getOptions());
-    console.log('Full Query String:', queryM.toString());
-
-    // Execute the query
     const appointments = await queryM.exec();
     console.log(appointments.length);
 
     const totalRecords = await this.appointmentModel
-      .countDocuments(params)
+      .countDocuments(query)
       .exec();
     return { data: appointments, total: totalRecords };
   }
@@ -121,14 +101,23 @@ export class AppointmentsService {
     };
   }
 
-  async findByPatienId(id:string): Promise<Appointment[]> {
+  async findByPatienId(id: string) {
+    const patient = await this.patientService.findOne(id)
     // console.log('mob',mobile)
-    return this.appointmentModel
-      .find({patient:id})
+    const appointments = await this.appointmentModel
+      .find({ patient: id })
       .populate('patient')
-      .sort({'created_at':'desc'})
+      .populate('doctor')
+      .populate('invoice')
+      .populate('services')
+      .sort({ created_at: 'desc' })
       .limit(5)
       .exec();
+
+      return {
+        patient,
+        appointments,
+      };
   }
 
   async update(
@@ -180,5 +169,17 @@ export class AppointmentsService {
     const nextNumber = lastNumber + 1;
     const paddedNumber = nextNumber.toString().padStart(7, '0'); // Adjust length as needed
     return `${this.prefix}${paddedNumber}`;
+  }
+
+  getEndDate(startDate){
+    // Convert the string to a Date object
+    const dateObj = new Date(startDate);
+
+    // Add one day to the date
+    dateObj.setDate(dateObj.getDate() + 1);
+
+    // Format the next date as a string (YYYY-MM-DD)
+    return dateObj.toISOString() // Formats as 'YYYY-MM-DD'
+
   }
 }

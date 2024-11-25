@@ -9,6 +9,7 @@ import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
 import { EmailService } from 'src/email/email.service';
 import { never } from 'rxjs';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -19,37 +20,36 @@ export class UsersService {
 
   async create(createUserDto: User): Promise<any> {
     const createdUser = new this.userModel(createUserDto);
-    return  (await createdUser.save())
+    return await createdUser.save();
   }
 
   async findAll(params) {
+    const size = params.size;
+    const skip = params.page * params.size;
 
-     const size = params.size;
-     const skip = params.page * params.size;
+    let query: any = {};
+    if (params.q) {
+      const regex = new RegExp(params.q, 'i'); // 'i' makes it case-insensitive
+      query = {
+        $or: [
+          { first_name: { $regex: regex } },
+          { last_name: { $regex: regex } },
+          { email: { $regex: regex } },
+          { mobile: { $regex: regex } },
+        ],
+      };
+    }
 
-     let query:any = {};
-     if (params.q) {
-       const regex = new RegExp(params.q, 'i'); // 'i' makes it case-insensitive
-       query = {
-         $or: [
-           { first_name: { $regex: regex } },
-           { last_name: { $regex: regex } },
-           { email: { $regex: regex } },
-           { mobile: { $regex: regex } },
-         ],
-       };
-     }
+    query = { ...query, role: 'staff' };
 
-     query = {...query, role: 'staff'};
-
-     console.log(query)
-     const users = await this.userModel
-       .find(query)
-       .skip(skip)
-       .limit(size)
-       .exec();
-     const totalRecords = await this.userModel.countDocuments().exec();
-     return { data: users, total: totalRecords };
+    console.log(query);
+    const users = await this.userModel
+      .find(query)
+      .skip(skip)
+      .limit(size)
+      .exec();
+    const totalRecords = await this.userModel.countDocuments().exec();
+    return { data: users, total: totalRecords };
     // return this.userModel.find({role:'staff'}).exec();
   }
 
@@ -67,6 +67,16 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: User): Promise<User> {
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(id, updateUserDto, { new: true })
+      .exec();
+    if (!updatedUser) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return updatedUser;
+  }
+
+  async updateNote(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const updatedUser = await this.userModel
       .findByIdAndUpdate(id, updateUserDto, { new: true })
       .exec();

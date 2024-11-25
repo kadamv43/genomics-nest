@@ -24,6 +24,7 @@ import { Request } from 'express';
 import { DoctorsService } from 'src/doctors/doctors.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileUploadService } from 'src/services/file-upload/file-upload/file-upload.service';
+import { get } from 'http';
 
 @UseGuards(JwtAuthGuard)
 @Controller('appointments')
@@ -42,7 +43,6 @@ export class AppointmentsController {
     return this.appointmentsService.create(createAppointmentDto);
   }
 
-
   @Get()
   async findAll(@Req() req: Request, @Query() query: Record<string, any>) {
     if (req.user['role'] == 'admin' || req.user['role'] == 'staff') {
@@ -57,6 +57,19 @@ export class AppointmentsController {
       query.doctor = doctor[0]._id;
       return await this.appointmentsService.findAll(query);
     }
+  }
+
+  @Get('search')
+  async getAppointmentBy(
+    @Req() req: Request,
+    @Query() query: Record<string, any>,
+  ) {
+    return await this.appointmentsService.findAll(query);
+  }
+
+  @Get('patient/:id')
+  getAppointmentsByPatienId(@Param('id') id: string) {
+    return this.appointmentsService.findByPatienId(id);
   }
 
   @Post('upload-files/:id')
@@ -87,7 +100,6 @@ export class AppointmentsController {
       //  filePaths,
     };
   }
-
 
   @Get(':id')
   findOne(@Param('id') id: string) {

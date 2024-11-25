@@ -21,7 +21,13 @@ export class User {
   password: string;
 
   @Prop({ required: false })
+  mobile: string;
+
+  @Prop({ required: false })
   otp: string;
+
+  @Prop({ required: false })
+  note: string;
 
   @Prop({ type: String, enum: Role, default: Role.Staff })
   role: Role;

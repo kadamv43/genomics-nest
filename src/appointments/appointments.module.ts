@@ -15,6 +15,7 @@ import { FileUploadService } from 'src/services/file-upload/file-upload/file-upl
 import { Patient, PatientSchema } from 'src/patients/patients.schema';
 import { Product, ProductSchema } from 'src/products/product.schema';
 import { Doctor, DoctorSchema } from 'src/doctors/doctor.schema';
+import { PatientsService } from 'src/patients/patients.service';
 
 
 @Module({
@@ -45,6 +46,7 @@ import { Doctor, DoctorSchema } from 'src/doctors/doctor.schema';
     AppointmentsService,
     PdfService,
     DoctorsService,
+    PatientsService,
     FileUploadService,
   ],
   exports: [AppointmentsService,MongooseModule],

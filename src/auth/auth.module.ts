@@ -2,12 +2,17 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
-import {PassportModule} from '@nestjs/passport';
-import { LocalStrategy } from './strategies/local.strategy';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { PassportModule } from '@nestjs/passport';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './guards/roles.guard';
 import { UsersModule } from 'src/users/users.module';
+import { UserGuard } from './guards/user.guad';
+import { PatientGuard } from './guards/patient.guard';
+import { PatientsService } from 'src/patients/patients.service';
+import { PatientsModule } from 'src/patients/patients.module';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { HttpModule } from '@nestjs/axios';
+import { OtpModule } from 'src/otp/otp.module';
 
 @Module({
   imports: [
@@ -17,12 +22,11 @@ import { UsersModule } from 'src/users/users.module';
       signOptions: { expiresIn: '10h' },
     }),
     UsersModule,
+    PatientsModule,
+    OtpModule,
+    HttpModule
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    LocalStrategy,
-    JwtStrategy
-  ],
+  providers: [AuthService, JwtStrategy, PatientGuard],
 })
 export class AuthModule {}

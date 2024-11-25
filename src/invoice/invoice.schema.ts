@@ -43,14 +43,17 @@ export class Invoice {
   @Prop({ required: true })
   received_by: string;
 
+  @Prop({ required: false })
+  file: string;
+
   @Prop([
     {
       name: { type: String, required: true },
       price: { type: Number, required: true },
-      type:{type:String,required:true}
+      type: { type: String, required: true },
     },
   ])
-  particulars: { name: string; price: number,type:string }[];
+  particulars: { name: string; price: number; type: string }[];
 
   @Prop({ default: Date.now })
   created_at: Date;

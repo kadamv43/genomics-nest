@@ -1,16 +1,20 @@
 // src/invoices/invoices.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Req } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Invoice, InvoiceDocument } from './invoice.schema';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
-import { UpdateInvoiceDto } from './dto/create-invoice.dto';
+import { UpdateInvoiceDto } from './dto/update-invoice.dto';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+import { Request } from 'express';
 
 @Injectable()
 export class InvoiceService {
   private readonly prefix = 'INVOICE-';
   constructor(
     @InjectModel(Invoice.name) private invoiceModel: Model<InvoiceDocument>,
+    private httpService: HttpService,
   ) {}
 
   async create(createInvoiceDto: CreateInvoiceDto): Promise<Invoice> {
@@ -36,10 +40,11 @@ export class InvoiceService {
   }
 
   async findOne(id: string): Promise<Invoice> {
-    const invoice = await this.invoiceModel.findById(id)
-    .populate('doctor')
-    .populate('patient')
-    .exec();
+    const invoice = await this.invoiceModel
+      .findById(id)
+      .populate('doctor')
+      .populate('patient')
+      .exec();
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
     }
@@ -67,7 +72,12 @@ export class InvoiceService {
   }
 
   async findBy(query: Record<string, any>): Promise<Invoice[]> {
-    return this.invoiceModel.find(query).exec();
+    return this.invoiceModel
+      .find(query)
+      .populate('appointment')
+      .populate('patient')
+      .populate('doctor')
+      .exec();
   }
 
   async deleteManyByQuery(
@@ -94,5 +104,66 @@ export class InvoiceService {
     const nextNumber = lastNumber + 1;
     const paddedNumber = nextNumber.toString().padStart(7, '0'); // Adjust length as needed
     return `${this.prefix}${paddedNumber}`;
+  }
+
+  async sendFile(invoiceId: string,req:Request) {
+    const domain =  `${req.protocol}://${req.get('host')}`;
+    console.log(domain);
+
+    const invoice = await this.invoiceModel
+      .findById(invoiceId)
+      .populate('patient')
+      .exec();
+
+    const payload = {
+      integrated_number: process.env.WHATSAPP_NUMBER,
+      content_type: 'template',
+      payload: {
+        messaging_product: 'whatsapp',
+        type: 'template',
+        template: {
+          name: 'invoice',
+          language: {
+            code: 'en',
+            policy: 'deterministic',
+          },
+          namespace: 'ece4ae9f_6e63_4812_9468_c1b47649f31b',
+          to_and_components: [
+            {
+              to: [invoice?.patient?.mobile],
+              components: {
+                header_1: {
+                  type: 'document',
+                  value: `${domain}/uploads/${invoice?.file}`,
+                  filename: 'invoice.pdf',
+                },
+              },
+            },
+          ],
+        },
+      },
+    };
+    const url = process.env.WHATSAPP_API;
+
+    try {
+      const headers = {
+        authkey: process.env.WHATSAPP_API_KEY, // Add your authorization token if needed
+        'Content-Type': 'application/json', // Content type for JSON
+      };
+
+      // if (process.env.OTP == 'true') {
+      const response = await firstValueFrom(
+        this.httpService.post(url, payload, { headers }), // data is the request body
+      );
+      // }
+
+      return { message: 'OTP sent Successfully', data: [] };
+
+      // return response.data; // Return the data from the API response
+    } catch (error) {
+      // Handle errors here
+      console.error('Error making POST request', error);
+      throw error;
+    }
   }
 }

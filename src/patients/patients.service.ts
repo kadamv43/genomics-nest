@@ -5,6 +5,8 @@ import { Model } from 'mongoose';
 import { Patient } from './patients.schema';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
 @Injectable()
 export class PatientsService {
   prefix = 'PATIENT-';
@@ -16,9 +18,9 @@ export class PatientsService {
     const { mobile } = createPatientDto;
     const existingPatient = await this.patientModel.findOne({ mobile }).exec();
 
-    console.log("ex",existingPatient)
+    console.log('ex', existingPatient);
 
-    if(existingPatient){
+    if (existingPatient) {
       return existingPatient;
     }
     createPatientDto.patient_number = await this.generateUniquePatientNumber();
@@ -45,6 +47,7 @@ export class PatientsService {
 
     const patients = await this.patientModel
       .find(query)
+      .sort({ created_at: 'desc' })
       .skip(skip)
       .limit(size)
       .exec();
@@ -64,6 +67,10 @@ export class PatientsService {
     return this.patientModel.find(query).exec();
   }
 
+  async findByOne(query: Record<string, any>): Promise<Patient> {
+    return this.patientModel.findOne(query).exec();
+  }
+
   async update(
     id: string,
     updatePatientDto: UpdatePatientDto,
@@ -75,6 +82,15 @@ export class PatientsService {
       throw new NotFoundException(`Patient #${id} not found`);
     }
     return existingPatient;
+  }
+
+  async insertData(data: any[]): Promise<any> {
+    try {
+      const insertedData = await this.patientModel.insertMany(data);
+      return { message: 'Data inserted successfully', insertedData };
+    } catch (error) {
+      throw new Error(`Failed to insert data: ${error.message}`);
+    }
   }
 
   async remove(id: string): Promise<Patient> {

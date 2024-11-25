@@ -13,10 +13,6 @@ export class CreateInvoiceDto {
   readonly discount: number;
   readonly payment_mode: string;
   received_by: string;
+  file?:string
   readonly particulars: { name: string; price: number }[];
 }
-
-// src/invoices/dto/update-invoice.dto.ts
-
-
-export class UpdateInvoiceDto extends PartialType(CreateInvoiceDto) {}

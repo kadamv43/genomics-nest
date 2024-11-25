@@ -23,6 +23,9 @@ import { GalleryModule } from './gallery/gallery.module';
 import { BannersModule } from './banners/banners.module';
 import { GalleryImagesModule } from './gallery-images/gallery-images.module';
 import { WebModule } from './web/web.module';
+import { OtpModule } from './otp/otp.module';
+import { AppConfigModule } from './app-config/app-config.module';
+
 
 @Module({
   imports: [
@@ -46,6 +49,8 @@ import { WebModule } from './web/web.module';
     BannersModule,
     GalleryImagesModule,
     WebModule,
+    OtpModule,
+    AppConfigModule
   ],
   controllers: [AppController, UploadsController],
   providers: [AppService, PdfService, FileUploadService],

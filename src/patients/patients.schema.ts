@@ -8,14 +8,20 @@ export class Patient {
   @Prop({ required: true, trim: true })
   patient_number: string;
 
-  @Prop({ required: true, trim: true })
-  first_name: string;
+  @Prop({ required: false, trim: true })
+  first_name?: string;
 
-  @Prop({ required: true, trim: true })
-  last_name: string;
+  @Prop({ required: false, trim: true })
+  husband_name?: string;
+
+  @Prop({ required: false, trim: true })
+  last_name?: string;
 
   @Prop({ required: false, trim: true })
   dob: string;
+
+  @Prop({ required: false, trim: true })
+  husband_dob: string;
 
   @Prop({ required: false, trim: true })
   age: string;
@@ -26,14 +32,20 @@ export class Patient {
   @Prop({ required: false, trim: true })
   blood_group: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: false })
   mobile: string;
+
+  @Prop({ required: false })
+  husband_mobile: string;
 
   @Prop({ required: false })
   email: string;
 
   @Prop({ required: false })
   otp: string;
+
+  @Prop({ required: false })
+  address: string;
 
   @Prop({ required: false })
   reference_by: string;

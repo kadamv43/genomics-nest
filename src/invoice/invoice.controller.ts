@@ -10,14 +10,18 @@ import {
   Query,
   UseGuards,
   Req,
+  Patch,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
-import { UpdateInvoiceDto } from './dto/create-invoice.dto';
 import { Invoice } from './invoice.schema';
-import { Request } from 'express';
+import { query, Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { AppointmentsService } from 'src/appointments/appointments.service';
+import { UpdateInvoiceDto } from './dto/update-invoice.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('invoice')
 export class InvoiceController {
@@ -48,6 +52,11 @@ export class InvoiceController {
     return this.invoicesService.findAll(query);
   }
 
+  @Get('pending-invoices')
+  getPendingInvoices() {
+    return this.invoicesService.findBy({ balance: { $gt: 0 } });
+  }
+
   @Get('pre-post-charges')
   prePostCharges() {
     return [
@@ -76,12 +85,26 @@ export class InvoiceController {
     return this.invoicesService.findOne(id);
   }
 
-  @Put(':id')
-  update(
+
+  @Patch(':id')
+  @UseInterceptors(FileInterceptor('file'))
+  async updatePartial(
     @Param('id') id: string,
+    @Query() query: Record<string, any>,
     @Body() updateInvoiceDto: UpdateInvoiceDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
   ): Promise<Invoice> {
-    return this.invoicesService.update(id, updateInvoiceDto);
+    if (file) {
+      updateInvoiceDto.file = 'invoice/' + file.filename;
+    }
+
+    const res = await this.invoicesService.update(id, updateInvoiceDto);
+
+    if (query.send == 'whatsapp') {
+      await this.invoicesService.sendFile(id, req);
+    }
+    return res;
   }
 
   @Delete(':id')

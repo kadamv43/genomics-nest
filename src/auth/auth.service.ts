@@ -2,32 +2,53 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthPayloadDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
+import { PatientsService } from 'src/patients/patients.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
+    private patientService: PatientsService,
   ) {}
 
-  async validateUser({ username, password }: AuthPayloadDto) {
-    const findUser: any = await this.usersService.findByField({
-      email: username,
-    });
-    if (!findUser) throw new UnauthorizedException('invalid credentials');
-    if (
-      findUser &&
-      (await this.usersService.validatePassword(password, findUser.password))
-    ) {
-      return {
-        token: this.jwtService.sign({
-          username: findUser.email,
-          first_name: findUser.first_name,
-          last_name: findUser.last_name,
-          sub: findUser._id,
-          role: findUser.role,
-        }),
-      };
+  async validateUser(email: string, password: string) {
+    const user = await this.usersService.findByField({ email });
+    if (user && (await bcrypt.compare(password, user.password))) {
+      return user;
     }
+    throw new UnauthorizedException('Invalid credentials');
+  }
+
+  async validatePatient(mobile: string, otp: string) {
+    const patient = await this.patientService.findByOne({ mobile });
+    if (patient && otp === '1234') {
+      return patient;
+    }
+    throw new UnauthorizedException('Invalid OTP');
+  }
+
+  async loginUser(user: any) {
+    const payload = {
+      sub: user._id,
+      first_name:user.first_name,
+      last_name:user.last_name,
+      email:user.email,
+      role:user.role,
+      mobile:user.mobile
+    };
+    return {
+      accessToken: this.jwtService.sign(payload),
+    };
+  }
+
+  async loginPatient(patient: any) {
+    let plainPatient = patient.toObject();
+    let data = { ...plainPatient, sub: plainPatient._id };
+    console.log(data)
+    return {
+      accessToken: this.jwtService.sign(data),
+    };
   }
 }
