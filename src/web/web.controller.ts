@@ -37,8 +37,8 @@ export class WebController {
       reason: body.message,
       remark: '',
       status: 'created',
-      appointment_time: new Date().toISOString(),
-      appointment_date: new Date().toISOString(),
+      appointment_time: body.appointment_date,
+      appointment_date: body.appointment_date,
     };
 
     return this.appointmentService.createFromWeb(createAppointmentDto);
