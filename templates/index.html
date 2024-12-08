@@ -172,91 +172,111 @@
 
 <body>
 
-    <div class="invoice-container">
-        <div class="header">
-            <h1>Invoice</h1>
+    
+<div id="invoice" class="invoice-container">
+    <div class="header">
+        <h1>Invoice</h1>
+    </div>
+
+    <div class="invoice-details">
+        <div class="left">
+            <img
+                src="https://stageapi.genomicsivfcentre.com/public/assets/logo.png"
+                alt="Clinic Logo5"
+                crossorigin="*"
+            />
         </div>
-
-        <div class="invoice-details">
-            <div class="left">
-                <img src="https://api.genomicsivfcentre.com/assets/logo.png" alt="Clinic Logo">
-            </div>
-            <div class="right">
-                <p>Genomics infertility & test tube baby centre</p>
-                <p>Thirumalai house 1st floor above dhanalakshmi bank, near Sion fort, Sion East, Mumbai 400022</p>
-                <p>Phone: (123) 456-7890 | Email: info@clinic.com</p>
-            </div>
+        <div class="right">
+            <p>Genomics infertility & test tube baby centre</p>
+            <p>
+                Thirumalai house 1st floor above dhanalakshmi bank, near Sion
+                fort, Sion East, Mumbai 400022
+            </p>
+            <!-- <p>Phone: (123) 456-7890 | Email: info@clinic.com</p> -->
         </div>
+    </div>
 
-        <div class="invoice-details">
-            <div class="left">
-                <p class="date">Date: 01-09-2024 </p>
-                <p class="invoice-number">Invoice No : GENOMICS-0000001</p>
-
-            </div>
-            <div class="right">
-                <div class="patient-info">
-                    <p><strong>Patient Name:</strong> sfsrf srfref</p>
-                    <p><strong>Doctor Name:</strong> sfcsfc sff</p>
-                </div>
-                    <p><strong>Payment Method:</strong>UPI</p>
-                    <p><strong>Payment Status:</strong> Paid</p>
-            </div>
+    <div class="invoice-details">
+        <div class="left">
+            <p class="date">Date: {{invoiceDetails?.created_at | date:'dd-MM-Y'}}</p>
+            <p class="invoice-number">Invoice No : {{invoiceDetails?.invoice_number}}</p>
         </div>
+        <div class="right">
+            <div class="patient-info">
+                <p><strong>Patient Name:</strong> {{invoiceDetails?.patient?.first_name}} {{invoiceDetails?.patient?.last_name}}</p>
+                <p><strong>Doctor Name:</strong> {{invoiceDetails?.doctor?.first_name}} {{invoiceDetails?.doctor?.last_name}}</p>
+            </div>
+            <!-- <p><strong>Payment Method:</strong>{{invoiceDetails?.payment_mode}}</p>
+            <p><strong>Payment Status:</strong> Paid</p> -->
+        </div>
+    </div>
 
+    <table>
+        <thead>
+            <tr>
+                <th>Sr. No</th>
+                <th>Particulars</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr *ngFor="let item of invoiceDetails?.particulars; index as i">
+                <td>{{ i+1 }}</td>
+                <td>{{ item?.name }}</td>
+                <td>&#8377;{{ item?.price }}</td>
+            </tr>
+            
+        </tbody>
+    </table>
+
+    <div class="totals">
         <table>
-            <thead>
-                <tr>
-                    <th>Sr. No</th>
-                    <th>Particulars</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
             <tbody>
                 <tr>
-                    <td>1</td>
-                    <td>Endoscopy</td>
-                    <td>&#8377;9000</td>
+                    <th>Total:</th>
+                    <td class="total">&#8377;{{invoiceDetails?.total_amount}}</td>
+                </tr>
+                <tr>
+                    <th>Discount:</th>
+                    <td class="paid">&#8377;{{invoiceDetails?.discount}}</td>
+                </tr>
+                <tr>
+                    <th>Paid:</th>
+                    <td class="paid">&#8377;{{invoiceDetails?.paid}}</td>
+                </tr>
+                <tr>
+                    <th>Balance:</th>
+                    <td class="balance">&#8377;{{invoiceDetails?.balance}}</td>
+                </tr>
+
+                <tr>
+                    <th>Payment Method:</th>
+                    <td class="balance">{{invoiceDetails?.payment_mode}}</td>
+                </tr>
+                <tr>
+                    <th>Payment status:</th>
+                    <td class="balance">Paid</td>
                 </tr>
             </tbody>
         </table>
+    </div>
 
-        <div class="totals">
-
-            <table>
-                <tbody>
-                    <tr>
-                        <th>Total:</th>
-                        <td class="total">&#8377;9000</td>
-                    </tr>
-                    <tr>
-                        <th>Discount:</th>
-                        <td class="paid">&#8377;033</td>
-                    </tr>
-                    <tr>
-                        <th>Paid:</th>
-                        <td class="paid">&#8377;0</td>
-                    </tr>
-                    <tr>
-                        <th>Balance:</th>
-                        <td class="balance">&#8377;8967</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="signature">
-            <div class="received-by">
-                <p>Received by:</p>wed
-                <div class="signature-line"></div>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>Thank you for choosing our clinic. If you have any questions regarding this invoice, please contact us at
-                (123) 456-7890.</p>
+    <div class="signature">
+        <div class="received-by">
+            <p>Received by:</p>
+            {{invoiceDetails?.received_by}}
+            <div class="signature-line"></div>
         </div>
     </div>
+
+    <div class="footer">
+        <p>
+            Thank you for choosing our clinic. If you have any questions
+            regarding this invoice, please contact us at (123) 456-7890.
+        </p>
+    </div>
+</div>
 
 </body>
 

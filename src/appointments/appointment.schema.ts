@@ -40,7 +40,14 @@ export class Appointment {
   @Prop({ required: false })
   reason: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Invoice', required: false })
+  @Prop({ required: false })
+  remark: string;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Invoice',
+    required: false,
+  })
   invoice: Invoice;
 
   @Prop({ required: true, trim: true, default: 'Created' })

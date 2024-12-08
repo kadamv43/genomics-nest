@@ -34,6 +34,6 @@ import { extname } from 'path';
   ],
   controllers: [InvoiceController],
   providers: [InvoiceService, AppointmentsService],
-  exports: [MongooseModule],
+  exports: [MongooseModule,InvoiceService],
 })
 export class InvoiceModule {}

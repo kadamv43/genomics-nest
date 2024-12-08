@@ -3,8 +3,10 @@ import {
   Controller,
   Get,
   NotFoundException,
+  Param,
   Post,
   Query,
+  Render,
   Req,
 } from '@nestjs/common';
 import { AppointmentsService } from 'src/appointments/appointments.service';
@@ -15,6 +17,7 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from 'src/auth/auth.service';
 import { OtpService } from 'src/otp/otp.service';
+import { InvoiceService } from 'src/invoice/invoice.service';
 
 @Controller('web')
 export class WebController {
@@ -22,6 +25,7 @@ export class WebController {
     private patientService: PatientsService,
     private appointmentService: AppointmentsService,
     private otpService: OtpService,
+    private invoiceService:InvoiceService
   ) {}
 
   @Post('appointment')
@@ -100,4 +104,11 @@ export class WebController {
     }
   }
 
+  @Get('invoice/:id')
+  @Render('invoice') // Render the 'page' template
+  async getPageById(@Param('id') id: string): Promise<any> {
+    const invoice = await this.invoiceService.findOne(id)
+    console.log(invoice)
+    return invoice
+  }
 }

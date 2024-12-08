@@ -8,10 +8,12 @@ import { HttpModule } from '@nestjs/axios';
 import { AuthModule } from 'src/auth/auth.module';
 import { AuthService } from 'src/auth/auth.service';
 import { OtpModule } from 'src/otp/otp.module';
+import { InvoiceModule } from 'src/invoice/invoice.module';
+import { InvoiceService } from 'src/invoice/invoice.service';
 
 @Module({
   controllers: [WebController],
-  imports:[PatientsModule,AppointmentsModule,OtpModule],
+  imports:[PatientsModule,AppointmentsModule,OtpModule,InvoiceModule],
   providers:[PatientsService,AppointmentsService]
 })
 export class WebModule {}
