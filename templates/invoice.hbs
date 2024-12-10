@@ -194,15 +194,15 @@
 
     <div class="invoice-details">
         <div class="left">
-            <p class="date">Date: {{created_at}}</p>
+            <p class="date">Date: {{formatDate created_at 'dd-MM-yyyy'}} </p>
             <p class="invoice-number">Invoice No : {{invoice_number}}</p>
         </div>
         <div class="right">
             <div class="patient-info">
-                <p><strong>Patient Name:</strong> {{patient?.first_name}}
-                    {{patient?.last_name}}</p>
-                <p><strong>Doctor Name:</strong> {{doctor?.first_name}}
-                    {{doctor?.last_name}}</p>
+                <p><strong>Patient Name:</strong> {{patient.first_name}}
+                    {{patient.last_name}}</p>
+                <p><strong>Doctor Name:</strong> {{doctor.first_name}}
+                    {{doctor.last_name}}</p>
             </div>
             <!-- <p><strong>Payment Method:</strong>{{payment_mode}}</p>
             <p><strong>Payment Status:</strong> Paid</p> -->

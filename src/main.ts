@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { join } from 'path';
 import * as hbs from 'hbs';
+import { format } from 'date-fns';
+
 
 import { NestExpressApplication } from '@nestjs/platform-express';
 
@@ -13,6 +15,10 @@ async function bootstrap() {
 
   hbs.registerHelper('incrementIndex', function (index) {
     return index + 1;
+  });
+
+  hbs.registerHelper('formatDate', (date: Date, formatString: string) => {
+    return format(new Date(date), formatString);
   });
 
   app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
