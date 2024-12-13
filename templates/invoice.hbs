@@ -250,10 +250,31 @@
                     <td class="balance">&#8377;{{balance}}</td>
                 </tr>
 
-                <tr>
-                    <th>Payment Method:</th>
-                    <td class="balance">{{payment_mode}}</td>
+                {{#if partial_payment}}
+
+                <tr >
+                    <th>Payment 1:</th>
+                    <td class="balance">&#8377;{{payment_mode1.price}} ({{payment_mode1.mode}})</td>
                 </tr>
+                <tr >
+                    <th>Payment 2:</th>
+                    <td class="balance">&#8377;{{payment_mode2.price}} ({{payment_mode2.mode}})</td>
+                </tr>
+
+                {{else}}
+                    {{#if payment_mode}}
+                    <tr>
+                        <th>Payment Method:</th>
+                        <td class="balance">{{payment_mode}}</td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <th>Payment Method:</th>
+                        <td class="balance">{{payment_mode1.mode}}</td>
+                    </tr>
+                    {{/if}}
+                {{/if}}
+
                 <tr>
                     <th>Payment status:</th>
                     <td class="balance">Paid</td>

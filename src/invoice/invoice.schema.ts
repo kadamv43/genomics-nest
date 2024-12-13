@@ -37,7 +37,7 @@ export class Invoice {
   @Prop({ required: true })
   discount: number;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   payment_mode: string;
 
   @Prop({ required: true })
@@ -45,6 +45,15 @@ export class Invoice {
 
   @Prop({ required: false })
   file: string;
+
+  @Prop({ required: false })
+  partial_payment: number;
+
+  @Prop({ type:Object,required: false })
+  payment_mode1: { mode: string; price: number };
+
+  @Prop({type:Object, required: false })
+  payment_mode2: { mode: string; price: number };
 
   @Prop([
     {
