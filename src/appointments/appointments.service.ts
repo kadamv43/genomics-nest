@@ -5,6 +5,7 @@ import { Appointment, AppointmentDocument } from './appointment.schema';
 import { CreateAppointmentWebDto } from './dto/create-appointment-web.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { PatientsService } from 'src/patients/patients.service';
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -16,7 +17,9 @@ export class AppointmentsService {
     private patientService: PatientsService,
   ) {}
 
-  async create(createAppointmentDto: Appointment): Promise<Appointment> {
+  async create(
+    createAppointmentDto: CreateAppointmentDto,
+  ): Promise<Appointment> {
     const createdAppointment = new this.appointmentModel(createAppointmentDto);
     return createdAppointment.save();
   }
@@ -36,7 +39,7 @@ export class AppointmentsService {
     let query = {};
 
     if (from && !to) {
-      const startDate = new Date(from).toISOString()
+      const startDate = new Date(from).toISOString();
       query['appointment_date'] = {
         $gte: startDate,
         $lt: this.getEndDate(startDate),
@@ -45,7 +48,7 @@ export class AppointmentsService {
 
     if (from && to) {
       const startDate = new Date(from).toISOString();
-      const endDate = this.getEndDate(new Date(to).toISOString()); ;
+      const endDate = this.getEndDate(new Date(to).toISOString());
       query['appointment_date'] = {
         $gte: startDate,
         $lt: endDate,
@@ -102,7 +105,7 @@ export class AppointmentsService {
   }
 
   async findByPatienId(id: string) {
-    const patient = await this.patientService.findOne(id)
+    const patient = await this.patientService.findOne(id);
     // console.log('mob',mobile)
     const appointments = await this.appointmentModel
       .find({ patient: id })
@@ -114,10 +117,10 @@ export class AppointmentsService {
       .limit(5)
       .exec();
 
-      return {
-        patient,
-        appointments,
-      };
+    return {
+      patient,
+      appointments,
+    };
   }
 
   async update(
@@ -171,7 +174,7 @@ export class AppointmentsService {
     return `${this.prefix}${paddedNumber}`;
   }
 
-  getEndDate(startDate){
+  getEndDate(startDate) {
     // Convert the string to a Date object
     const dateObj = new Date(startDate);
 
@@ -179,7 +182,6 @@ export class AppointmentsService {
     dateObj.setDate(dateObj.getDate() + 1);
 
     // Format the next date as a string (YYYY-MM-DD)
-    return dateObj.toISOString() // Formats as 'YYYY-MM-DD'
-
+    return dateObj.toISOString(); // Formats as 'YYYY-MM-DD'
   }
 }

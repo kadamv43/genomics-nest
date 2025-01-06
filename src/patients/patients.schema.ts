@@ -6,7 +6,7 @@ export type PatientDocument = Patient & Document;
 @Schema()
 export class Patient {
   @Prop({ required: true, trim: true })
-  patient_number: string;
+  patient_number: number;
 
   @Prop({ required: false, trim: true })
   first_name?: string;

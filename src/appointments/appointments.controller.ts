@@ -25,6 +25,8 @@ import { DoctorsService } from 'src/doctors/doctors.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileUploadService } from 'src/services/file-upload/file-upload/file-upload.service';
 import { get } from 'http';
+import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('appointments')
@@ -37,7 +39,7 @@ export class AppointmentsController {
   ) {}
 
   @Post()
-  async create(@Body() createAppointmentDto: Appointment) {
+  async create(@Body() createAppointmentDto: CreateAppointmentDto) {
     createAppointmentDto.appointment_number =
       await this.appointmentsService.generateUniqueAppointmentNumber();
     return this.appointmentsService.create(createAppointmentDto);
@@ -107,7 +109,23 @@ export class AppointmentsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAppointmentDto: Appointment) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateAppointmentDto: UpdateAppointmentDto,
+  ) {
+    console.log('updateDOc', updateAppointmentDto);
+    if (updateAppointmentDto.follow_up) {
+      let appointment_number =
+        await this.appointmentsService.generateUniqueAppointmentNumber();
+      let appointment: CreateAppointmentDto = {
+        appointment_number,
+        patient: updateAppointmentDto.patient_id,
+        doctor: updateAppointmentDto.doctor_id,
+        appointment_date: updateAppointmentDto.follow_up,
+        appointment_time: updateAppointmentDto.follow_up,
+      };
+      await this.appointmentsService.create(appointment);
+    }
     return this.appointmentsService.update(id, updateAppointmentDto);
   }
 

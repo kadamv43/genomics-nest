@@ -18,6 +18,7 @@ export class UpdateAppointmentDto {
   appointment_time?: string;
   services?: Product[];
   reason?: string;
-  remark?:string
+  remark?: string;
   invoice?: Invoice;
+  follow_up?: string;
 }

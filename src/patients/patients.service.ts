@@ -47,7 +47,7 @@ export class PatientsService {
 
     const patients = await this.patientModel
       .find(query)
-      .sort({ created_at: 'desc' })
+      .sort({ patient_number: 'desc' })
       .skip(skip)
       .limit(size)
       .exec();
@@ -120,19 +120,18 @@ export class PatientsService {
       .findOne()
       .sort({ patient_number: -1 })
       .exec();
+
+    console.log(lastPatient);
     let lastNumber = 0;
 
     if (lastPatient && lastPatient?.patient_number) {
-      const lastNumberString = lastPatient.patient_number?.replace(
-        this.prefix,
-        '',
-      );
-      lastNumber = parseInt(lastNumberString, 10);
+      lastNumber = lastPatient.patient_number;
+      // lastNumber = parseInt(lastNumberString);
     }
 
     const nextNumber = lastNumber + 1;
-    const paddedNumber = nextNumber.toString().padStart(7, '0'); // Adjust length as needed
-    return `${this.prefix}${paddedNumber}`;
+    // const paddedNumber = nextNumber.toString().padStart(7, '0'); // Adjust length as needed
+    return `${nextNumber}`;
   }
 
   async importData(jsonData) {

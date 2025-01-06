@@ -24,7 +24,7 @@ import * as XLSX from 'xlsx';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @Controller('patients')
 export class PatientsController {
   prefix = 'PATIENT-';
@@ -62,40 +62,11 @@ export class PatientsController {
     if (!file) {
       throw new BadRequestException('File is required');
     }
-
-    let patient_number =
-      await this.patientsService.generateUniquePatientNumber();
-
     const workbook = XLSX.read(file.buffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const jsonData = XLSX.utils.sheet_to_json(sheet);
-    console.log(jsonData.length);
-    const data = jsonData?.map((item: any) => {
-      patient_number = this.increamentPatientNumber(patient_number);
-      // console.log(patient_number);
-      let first_name = '';
-      let husband_name = '';
-      let last_name = '';
-      let name = item?.patient_name?.split(' ');
-      // console.log(name)
-      if (name.length == 2) {
-        first_name = name[0];
-        last_name = name[1];
-        husband_name = '';
-      } else if (name.length > 2) {
-        first_name = name[0];
-        husband_name = name[1];
-        last_name = name[2];
-      }
-
-      if (name.length > 0) {
-        return { ...item, first_name, husband_name, last_name, patient_number };
-      }
-    });
-    //  console.log(data);
-    // Insert data into MongoDB
-    return await this.patientsService.insertData(data);
+    return await this.patientsService.insertData(jsonData);
   }
 
   @Get(':id')
