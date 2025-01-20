@@ -73,14 +73,4 @@ export class UsersController {
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
-
-  @Get('forgot-password/:id')
-  async forgotPassword(@Param('id') id: string) {
-    return this.usersService.forgotPasswordEmail(id);
-  }
-
-  @Post('reset-password/:id')
-  resetPassword(@Param('id') id: string, @Body() body: any) {
-    return this.usersService.resetPassword(id, body);
-  }
 }

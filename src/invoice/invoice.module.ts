@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { InvoiceController } from './invoice.controller';
 import { InvoiceService } from './invoice.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Invoice,InvoiceSchema } from './invoice.schema';
+import { Invoice, InvoiceSchema } from './invoice.schema';
 import { AppointmentsService } from 'src/appointments/appointments.service';
 import { AppointmentsModule } from 'src/appointments/appointments.module';
 import { HttpModule } from '@nestjs/axios';
@@ -10,6 +10,7 @@ import { PatientsModule } from 'src/patients/patients.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { EmailService } from 'src/email/email.service';
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import { extname } from 'path';
     }),
   ],
   controllers: [InvoiceController],
-  providers: [InvoiceService, AppointmentsService],
-  exports: [MongooseModule,InvoiceService],
+  providers: [InvoiceService, AppointmentsService, EmailService],
+  exports: [MongooseModule, InvoiceService],
 })
 export class InvoiceModule {}

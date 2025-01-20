@@ -16,7 +16,8 @@ import { Patient, PatientSchema } from 'src/patients/patients.schema';
 import { Product, ProductSchema } from 'src/products/product.schema';
 import { Doctor, DoctorSchema } from 'src/doctors/doctor.schema';
 import { PatientsService } from 'src/patients/patients.service';
-
+import * as fs from 'fs';
+import { EmailService } from 'src/email/email.service';
 
 @Module({
   imports: [
@@ -29,7 +30,12 @@ import { PatientsService } from 'src/patients/patients.service';
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, cb) => {
-          const uploadPath = process.env.UPLOAD_PATH+'appointment/';
+          const uploadPath = process.env.UPLOAD_PATH + 'appointment/';
+
+          if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true }); // Create parent directories if needed
+          }
+
           console.log(uploadPath);
           cb(null, uploadPath);
         },
@@ -48,7 +54,8 @@ import { PatientsService } from 'src/patients/patients.service';
     DoctorsService,
     PatientsService,
     FileUploadService,
+    EmailService,
   ],
-  exports: [AppointmentsService,MongooseModule],
+  exports: [AppointmentsService, MongooseModule],
 })
 export class AppointmentsModule {}

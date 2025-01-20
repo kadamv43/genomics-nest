@@ -22,11 +22,13 @@ import { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { Request } from 'express';
 import { DoctorsService } from 'src/doctors/doctors.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { FileUploadService } from 'src/services/file-upload/file-upload/file-upload.service';
 import { get } from 'http';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { EmailService } from 'src/email/email.service';
+import { format, formatDate } from 'date-fns';
 
 @UseGuards(JwtAuthGuard)
 @Controller('appointments')
@@ -34,15 +36,28 @@ export class AppointmentsController {
   constructor(
     private readonly appointmentsService: AppointmentsService,
     private doctorService: DoctorsService,
-    private pdfService: PdfService,
-    private fileUploadSevice: FileUploadService,
+    private emailService: EmailService,
   ) {}
 
   @Post()
   async create(@Body() createAppointmentDto: CreateAppointmentDto) {
     createAppointmentDto.appointment_number =
       await this.appointmentsService.generateUniqueAppointmentNumber();
-    return this.appointmentsService.create(createAppointmentDto);
+    const appointment: any =
+      await this.appointmentsService.create(createAppointmentDto);
+    if (appointment) {
+      let data = await this.appointmentsService.findOne(appointment?._id);
+      console.log(data);
+      let subject = `New Appointment (${data.appointment_number})`;
+      let newData = this.modifyAppointmentData(data);
+      this.emailService
+        .sendMailTemplateToAdmin(subject, newData, './create_appointment')
+        .catch((e) => {
+          console.error(e);
+        });
+    }
+
+    return appointment;
   }
 
   @Get()
@@ -75,27 +90,17 @@ export class AppointmentsController {
   }
 
   @Post('upload-files/:id')
-  @UseInterceptors(FilesInterceptor('files'))
+  @UseInterceptors(FileInterceptor('file'))
   async uploadFiles(
     @Param('id') id: string,
     @Body() body,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    //  let data: any = [];
-    files.forEach((item) => {
-      this.appointmentsService.addFilesToAppointment(
-        id,
-        'appointment/' + item.filename,
-        'report',
-      );
-      //  data.push({ id, image: 'appointment/' + item.filename });
-    });
-
-    //  let file_name = body.file_name;
-    //  const filePaths = await this.fileUploadSevice.uploadFiles(files);
-    //  filePaths.forEach((item) => {
-    //  this.appointmentsService.addFilesToAppointment(id, item, file_name);
-    //  });
+    this.appointmentsService.addFilesToAppointment(
+      id,
+      'appointment/' + file.filename,
+      body.report_name,
+    );
 
     return {
       message: 'Files uploaded successfully',
@@ -126,11 +131,48 @@ export class AppointmentsController {
       };
       await this.appointmentsService.create(appointment);
     }
-    return this.appointmentsService.update(id, updateAppointmentDto);
+
+    const appointment: any = this.appointmentsService.update(
+      id,
+      updateAppointmentDto,
+    );
+
+    if (appointment) {
+      let data = await this.appointmentsService.findOne(id);
+      console.log(data);
+      let subject = `Appointment Updated (${data.appointment_number})`;
+      let newData = this.modifyAppointmentData(data);
+      this.emailService
+        .sendMailTemplateToAdmin(subject, newData, './edit_appointment')
+        .catch((e) => {
+          console.error(e);
+        });
+    }
+
+    return appointment;
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.appointmentsService.remove(id);
+  }
+
+  @Patch('reports/:id')
+  removeReport(@Param('id') id: string, @Body() body: any) {
+    return this.appointmentsService.removeReport(id, body.image_id);
+  }
+
+  modifyAppointmentData(data) {
+    let newData = {};
+    newData['appointment'] = data?.appointment_number;
+    newData['patient'] =
+      data?.patient?.first_name + ' ' + data?.patient?.last_name;
+    newData['doctor'] =
+      data?.doctor?.first_name + ' ' + data?.doctor?.last_name;
+    newData['appointment_date'] = formatDate(
+      data?.appointment_date,
+      'dd-MM-yyyy hh:mm a',
+    );
+    return newData;
   }
 }

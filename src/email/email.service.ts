@@ -1,3 +1,4 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
@@ -5,13 +6,13 @@ import * as nodemailer from 'nodemailer';
 export class EmailService {
   private transporter: nodemailer.Transporter;
 
-  constructor() {
+  constructor(private mailerService: MailerService) {
     this.transporter = nodemailer.createTransport({
-        name:'mail.genomicsivfcentre.com',
+      name: 'mail.genomicsivfcentre.com',
       host: 'mail.genomicsivfcentre.com', // or another email service provider
-      port:465,
-      secure:true,
-      debug:true,
+      port: 465,
+      secure: true,
+      debug: true,
       auth: {
         user: 'info@genomicsivfcentre.com', // Your email address
         pass: 'Vinayak@123#', // Your email password
@@ -24,7 +25,7 @@ export class EmailService {
       from: 'info@genomicsivfcentre.com',
       to,
       subject,
-      text,
+      html: text,
     };
 
     try {
@@ -33,5 +34,16 @@ export class EmailService {
     } catch (error) {
       console.error('Error sending email:', error);
     }
+  }
+
+  async sendMailTemplateToAdmin(subject: string, data: any, template: string) {
+    await this.mailerService.sendMail({
+      to: process.env.RECEIVER_MAIL,
+      subject,
+      template,
+      context: {
+        data,
+      },
+    });
   }
 }

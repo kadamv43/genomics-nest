@@ -22,12 +22,14 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { AppointmentsService } from 'src/appointments/appointments.service';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { EmailService } from 'src/email/email.service';
 
 @Controller('invoice')
 export class InvoiceController {
   constructor(
     private readonly invoicesService: InvoiceService,
     private readonly appointmentService: AppointmentsService,
+    private emailService: EmailService,
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -44,6 +46,18 @@ export class InvoiceController {
     await this.appointmentService.update(invoice?.appointment, {
       invoice: invoice?._id,
     });
+
+    if (invoice) {
+      let data = await this.invoicesService.findOne(invoice?._id);
+      console.log(data);
+      let subject = `New Invoice Created (${data.invoice_number})`;
+      let newData = this.modifyData(data);
+      this.emailService
+        .sendMailTemplateToAdmin(subject, newData, './create_invoice')
+        .catch((e) => {
+          console.error(e);
+        });
+    }
     return invoice;
   }
 
@@ -85,7 +99,6 @@ export class InvoiceController {
     return this.invoicesService.findOne(id);
   }
 
-
   @Patch(':id')
   @UseInterceptors(FileInterceptor('file'))
   async updatePartial(
@@ -101,6 +114,18 @@ export class InvoiceController {
 
     const res = await this.invoicesService.update(id, updateInvoiceDto);
 
+    if (res) {
+      let data = await this.invoicesService.findOne(id);
+      console.log(data);
+      let subject = `Invoice Updated (${data.invoice_number})`;
+      let newData = this.modifyData(data);
+      this.emailService
+        .sendMailTemplateToAdmin(subject, newData, './edit_invoice')
+        .catch((e) => {
+          console.error(e);
+        });
+    }
+
     if (query.send == 'whatsapp') {
       await this.invoicesService.sendFile(id, req);
     }
@@ -110,5 +135,19 @@ export class InvoiceController {
   @Delete(':id')
   remove(@Param('id') id: string): Promise<void> {
     return this.invoicesService.remove(id);
+  }
+
+  modifyData(data) {
+    let newData = {};
+    newData['invoice_number'] = data?.invoice_number;
+    newData['total_amount'] = data?.total_amount;
+    newData['paid'] = data?.paid;
+    newData['balance'] = data?.balance;
+    newData['discount'] = data?.discount;
+    newData['received_by'] = data?.received_by;
+    newData['patient'] =
+      data?.patient?.first_name + ' ' + data?.patient?.last_name;
+    newData['opd_no'] = data?.patient?.patient_number;
+    return newData;
   }
 }

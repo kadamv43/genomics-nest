@@ -23,6 +23,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { EmailModule } from 'src/email/email.module';
+import { EmailService } from 'src/email/email.service';
 
 // @UseGuards(JwtAuthGuard)
 @Controller('patients')
@@ -31,6 +33,7 @@ export class PatientsController {
   constructor(
     private readonly patientsService: PatientsService,
     private httpService: HttpService,
+    private emailService: EmailService,
   ) {}
 
   @Post()
@@ -38,7 +41,19 @@ export class PatientsController {
     let patient_number =
       await this.patientsService.generateUniquePatientNumber();
     createPatientDto.patient_number = patient_number;
-    return this.patientsService.create(createPatientDto);
+    const patient: any = await this.patientsService.create(createPatientDto);
+    if (patient) {
+      let data = await this.patientsService.findOne(patient?._id);
+      console.log(data);
+      let subject = `New Patient Created (OPD - ${data.patient_number})`;
+      let newData = this.modifyData(data);
+      this.emailService
+        .sendMailTemplateToAdmin(subject, newData, './create_patient')
+        .catch((e) => {
+          console.error(e);
+        });
+    }
+    return patient;
   }
 
   @Get()
@@ -79,7 +94,11 @@ export class PatientsController {
     @Param('id') id: string,
     @Body() updatePatientDto: UpdatePatientDto,
   ): Promise<Patient> {
-    return this.patientsService.update(id, updatePatientDto);
+    const patient: any = await this.patientsService.update(
+      id,
+      updatePatientDto,
+    );
+    return patient;
   }
 
   @Patch(':id')
@@ -106,5 +125,13 @@ export class PatientsController {
     const nextNumber = lastNumber + 1;
     const paddedNumber = nextNumber.toString().padStart(7, '0'); // Adjust length as needed
     return `${this.prefix}${paddedNumber}`;
+  }
+
+  modifyData(data) {
+    let newData = {};
+    newData['opd'] = data?.patient_number;
+    newData['name'] = data?.first_name + ' ' + data?.last_name;
+    newData['mobile'] = data?.mobile;
+    return newData;
   }
 }
