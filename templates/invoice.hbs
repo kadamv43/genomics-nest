@@ -67,6 +67,7 @@
           <div class='patient-info'>
             <p><strong>Patient Name:</strong>
               {{patient.first_name}}
+              {{patient.husband_name}}
               {{patient.last_name}}</p>
             <p><strong>Doctor Name:</strong>
               {{doctor.first_name}}
@@ -160,6 +161,33 @@
           <div class='signature-line'></div>
         </div>
       </div>
+
+      {{#if cheque_details}}
+
+        <table>
+          <thead>
+            <tr>
+              <th>Account Holders</th>
+              <th>bank name</th>
+              <th>branch name</th>
+              <th>cheque number</th>
+              <th>Cheque Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr>
+              <td>{{cheque_details.account_holder}}</td>
+              <td>{{cheque_details.bank_name}}</td>
+              <td>{{cheque_details.branch_name}}</td>
+              <td>{{cheque_details.cheque_number}}</td>
+              <td>&#8377;{{cheque_details.cheque_amount}}</td>
+              {{!-- <td>&#8377;{{price}}</td> --}}
+            </tr>
+
+          </tbody>
+        </table>
+      {{/if}}
 
       <div class='footer'>
         <p>

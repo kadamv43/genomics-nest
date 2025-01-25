@@ -67,6 +67,9 @@ export class Patient {
     history: [Object];
   };
 
+  @Prop({ required: false })
+  files: [{}];
+
   @Prop({ default: Date.now })
   created_at: Date;
 

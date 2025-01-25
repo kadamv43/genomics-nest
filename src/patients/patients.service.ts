@@ -30,6 +30,7 @@ export class PatientsService {
 
   async findAll(params) {
     const size = params.size;
+    const exportExcel = params.export;
     const skip = params.page * params.size;
 
     let query = {};
@@ -47,14 +48,36 @@ export class PatientsService {
       };
     }
 
-    const patients = await this.patientModel
+    let queryBuilder = this.patientModel
       .find(query)
-      .sort({ patient_number: 'desc' })
-      .skip(skip)
-      .limit(size)
-      .exec();
-    const totalRecords = await this.patientModel.countDocuments().exec();
+      .sort({ patient_number: 'desc' });
+
+    if (!exportExcel) {
+      queryBuilder = queryBuilder.skip(skip).limit(size);
+    }
+
+    const patients = await queryBuilder.exec();
+    const totalRecords = await this.patientModel.countDocuments(query).exec();
     return { data: patients, total: totalRecords };
+  }
+
+  async addFilesToAppointment(
+    id: string,
+    file: string,
+    file_name: string,
+  ): Promise<Patient> {
+    let file_type = file.endsWith('.pdf') ? 'pdf' : 'image';
+    const timestamp = Math.floor(Date.now() / 1000);
+
+    return this.patientModel
+      .findByIdAndUpdate(
+        id,
+        {
+          $addToSet: { files: { id: timestamp, file_name, file, file_type } },
+        },
+        { new: true }, // Returns the updated document
+      )
+      .exec();
   }
 
   async findOne(id: string): Promise<Patient> {
@@ -95,6 +118,26 @@ export class PatientsService {
     }
   }
 
+  async removeReport(id: string, image_id: number): Promise<Patient> {
+    console.log('app', id);
+    console.log('img', image_id);
+    let appointment = await this.patientModel.findById(id).exec();
+    let files = appointment.files.filter((item: any) => {
+      return item.id != image_id;
+    });
+
+    console.log('files', files);
+    return this.patientModel
+      .findByIdAndUpdate(
+        id,
+        {
+          files,
+        },
+        { new: true }, // Returns the updated document
+      )
+      .exec();
+  }
+
   async remove(id: string): Promise<Patient> {
     const deletedPatient = await this.patientModel.findByIdAndDelete(id).exec();
     if (!deletedPatient) {
@@ -111,7 +154,16 @@ export class PatientsService {
           { first_name: searchRegex },
           { last_name: searchRegex },
           { email: searchRegex },
-          { mobile: searchRegex },
+          // { patient_number: searchRegex },
+          // { mobile: searchRegex },
+          {
+            $expr: {
+              $regexMatch: {
+                input: { $toString: '$patient_number' }, // Convert number to string
+                regex: searchRegex,
+              },
+            },
+          },
         ],
       })
       .exec();

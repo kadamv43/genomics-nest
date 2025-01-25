@@ -1,6 +1,6 @@
 // src/invoices/schemas/invoice.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document,Types, Schema as MongooseSchema } from 'mongoose';
+import { Document, Types, Schema as MongooseSchema } from 'mongoose';
 import { Appointment } from 'src/appointments/appointment.schema';
 import { Doctor } from 'src/doctors/doctor.schema';
 import { Patient } from 'src/patients/patients.schema';
@@ -49,10 +49,10 @@ export class Invoice {
   @Prop({ required: false })
   partial_payment: number;
 
-  @Prop({ type:Object,required: false })
+  @Prop({ type: Object, required: false })
   payment_mode1: { mode: string; price: number };
 
-  @Prop({type:Object, required: false })
+  @Prop({ type: Object, required: false })
   payment_mode2: { mode: string; price: number };
 
   @Prop([
@@ -63,6 +63,24 @@ export class Invoice {
     },
   ])
   particulars: { name: string; price: number; type: string }[];
+
+  @Prop({
+    type: {
+      account_holder: { type: String, required: true },
+      bank_name: { type: String, required: true },
+      branch_name: { type: String, required: true },
+      cheque_number: { type: String, required: true },
+      cheque_amount: { type: String, required: true },
+    },
+    required: false,
+  })
+  cheque_details: {
+    account_holder: string;
+    bank_name: number;
+    branch_name: string;
+    cheque_number: string;
+    cheque_amount: string;
+  }[];
 
   @Prop({ default: Date.now })
   created_at: Date;

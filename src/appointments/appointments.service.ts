@@ -33,7 +33,7 @@ export class AppointmentsService {
 
   async findAll(params) {
     console.log(params);
-    const { page, size, q, from, to, status } = params;
+    const { page, size, q, from, to, status, doctor } = params;
     const skip = page * size;
 
     let query = {};
@@ -57,6 +57,10 @@ export class AppointmentsService {
 
     if (status) {
       query['status'] = status;
+    }
+
+    if (doctor) {
+      query['doctor'] = doctor;
     }
 
     if (q) {

@@ -101,6 +101,25 @@ export class PatientsController {
     return patient;
   }
 
+  @Post('upload-files/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFiles(
+    @Param('id') id: string,
+    @Body() body,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    this.patientsService.addFilesToAppointment(
+      id,
+      'patient/' + file.filename,
+      body.report_name,
+    );
+
+    return {
+      message: 'Files uploaded successfully',
+      //  filePaths,
+    };
+  }
+
   @Patch(':id')
   updatePartial(
     @Param('id') id: string,
@@ -112,6 +131,11 @@ export class PatientsController {
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<Patient> {
     return this.patientsService.remove(id);
+  }
+
+  @Patch('reports/:id')
+  removeReport(@Param('id') id: string, @Body() body: any) {
+    return this.patientsService.removeReport(id, body.image_id);
   }
 
   increamentPatientNumber(lastPatient) {
