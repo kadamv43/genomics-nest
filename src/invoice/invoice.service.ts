@@ -106,8 +106,8 @@ export class InvoiceService {
     return `${this.prefix}${paddedNumber}`;
   }
 
-  async sendFile(invoiceId: string,req:Request) {
-    const domain =  `${req.protocol}://${req.get('host')}`;
+  async sendFile(invoiceId: string, req: Request) {
+    const domain = `${req.protocol}://${req.get('host')}`;
     console.log(domain);
 
     const invoice = await this.invoiceModel
@@ -151,13 +151,14 @@ export class InvoiceService {
         'Content-Type': 'application/json', // Content type for JSON
       };
 
-      // if (process.env.OTP == 'true') {
-      const response = await firstValueFrom(
-        this.httpService.post(url, payload, { headers }), // data is the request body
-      );
-      // }
-
-      return { message: 'OTP sent Successfully', data: [] };
+      this.httpService.post(url, payload, { headers }).subscribe({
+        next: () => {
+          return { message: 'OTP sent Successfully', data: [] };
+        },
+        error: (err) => {
+          return { message: 'error', data: err };
+        },
+      });
 
       // return response.data; // Return the data from the API response
     } catch (error) {
