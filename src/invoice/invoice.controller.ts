@@ -61,6 +61,39 @@ export class InvoiceController {
     return invoice;
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('balance')
+  async createBalance(
+    @Req() req: any,
+    @Body() createInvoiceDto: CreateInvoiceDto,
+  ): Promise<Invoice> {
+    console.log(req.user);
+    createInvoiceDto.invoice_number =
+      await this.invoicesService.generateUniqueInvoiceNumber();
+    createInvoiceDto.received_by = `${req.user?.first_name}  ${req.user?.last_name}`;
+    const invoice: any = await this.invoicesService.create(createInvoiceDto);
+    await this.appointmentService.update(invoice?.appointment, {
+      balance_invoice: invoice?._id,
+    });
+
+    await this.invoicesService.update(createInvoiceDto?.old_invoice, {
+      balance_paid: true,
+    });
+
+    if (invoice) {
+      let data = await this.invoicesService.findOne(invoice?._id);
+      console.log(data);
+      let subject = `New Invoice Created (${data.invoice_number})`;
+      let newData = this.modifyData(data);
+      this.emailService
+        .sendMailTemplateToAdmin(subject, newData, './create_invoice')
+        .catch((e) => {
+          console.error(e);
+        });
+    }
+    return invoice;
+  }
+
   @Get()
   findAll(@Query() query: Record<string, any>) {
     return this.invoicesService.findAll(query);
@@ -68,7 +101,7 @@ export class InvoiceController {
 
   @Get('pending-invoices')
   getPendingInvoices() {
-    return this.invoicesService.findBy({ balance: { $gt: 0 } });
+    return this.invoicesService.findBy({ balance_paid: false });
   }
 
   @Get('pre-post-charges')

@@ -25,6 +25,13 @@ export class Invoice {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Doctor', required: false })
   doctor: Doctor;
 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Invoice',
+    required: false,
+  })
+  old_invoice: Invoice;
+
   @Prop({ required: true })
   total_amount: number;
 
@@ -48,6 +55,9 @@ export class Invoice {
 
   @Prop({ required: false })
   partial_payment: number;
+
+  @Prop({ required: false })
+  balance_paid: boolean;
 
   @Prop({ type: Object, required: false })
   payment_mode1: { mode: string; price: number };

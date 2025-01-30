@@ -4,7 +4,6 @@ import { join } from 'path';
 import * as hbs from 'hbs';
 import { format } from 'date-fns';
 
-
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
@@ -15,6 +14,10 @@ async function bootstrap() {
 
   hbs.registerHelper('incrementIndex', function (index) {
     return index + 1;
+  });
+
+  hbs.registerHelper('ifGreaterThan', function (value, threshold, options) {
+    return value > threshold ? options.fn(this) : options.inverse(this);
   });
 
   hbs.registerHelper('formatDate', (date: Date, formatString: string) => {

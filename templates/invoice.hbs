@@ -79,81 +79,230 @@
         </div>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Sr. No</th>
-            <th>Particulars</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
+      {{#if old_invoice}}
 
-          {{#each particulars}}
-            <tr>
-              <td>{{incrementIndex @index}}</td>
-              <td>{{name}}</td>
-              <td>&#8377;{{price}}</td>
-            </tr>
-          {{/each}}
-
-        </tbody>
-      </table>
-
-      <div class='totals'>
         <table>
-          <tbody>
+          <thead>
             <tr>
-              <th>Total:</th>
-              <td class='total'>&#8377;{{total_amount}}</td>
-            </tr>
-            <tr>
-              <th>Discount:</th>
-              <td class='paid'>&#8377;{{discount}}</td>
-            </tr>
-            <tr>
-              <th>Paid:</th>
-              <td class='paid'>&#8377;{{paid}}</td>
-            </tr>
-            <tr>
-              <th>Balance:</th>
-              <td class='balance'>&#8377;{{balance}}</td>
-            </tr>
+              <th>Pendig balance</th>
+              <th>Paid Amount</th>
 
-            {{#if partial_payment}}
+              {{#ifGreaterThan discount 0}}
+                <th>Discount</th>
+              {{/ifGreaterThan}}
 
-              <tr>
-                <th>Payment 1:</th>
-                <td class='balance'>&#8377;{{payment_mode1.price}}
-                  ({{payment_mode1.mode}})</td>
-              </tr>
-              <tr>
-                <th>Payment 2:</th>
-                <td class='balance'>&#8377;{{payment_mode2.price}}
-                  ({{payment_mode2.mode}})</td>
-              </tr>
-
-            {{else}}
-              {{#if payment_mode}}
-                <tr>
-                  <th>Payment Method:</th>
-                  <td class='balance'>{{payment_mode}}</td>
-                </tr>
+              {{#if partial_payment}}
+                <th>Payment 1</th>
+                <th>Paymnt 2</th>
               {{else}}
-                <tr>
-                  <th>Payment Method:</th>
-                  <td class='balance'>{{payment_mode1.mode}}</td>
-                </tr>
+                <th>Payment Method</th>
               {{/if}}
-            {{/if}}
+
+              {{! <th>Cheque Amount</th> }}
+            </tr>
+          </thead>
+          <tbody>
 
             <tr>
-              <th>Payment status:</th>
-              <td class='balance'>Paid</td>
+              <td>{{total_amount}}</td>
+              <td>{{paid}}</td>
+
+              {{#ifGreaterThan discount 0}}
+                <td>{{discount}}</td>
+              {{/ifGreaterThan}}
+              {{#if partial_payment}}
+                <td>&#8377;{{payment_mode1.price}}
+                  ({{payment_mode1.mode}})</td>
+                <td>&#8377;{{payment_mode2.price}}
+                  ({{payment_mode2.mode}})</td>
+              {{else}}
+
+                {{#if payment_mode}}
+
+                  <td>{{payment_mode}}</td>
+                {{else}}
+                  <td>{{payment_mode1.mode}}</td>
+                {{/if}}
+
+              {{/if}}
+
+              {{!-- <td>&#8377;{{cheque_details.cheque_amount}}</td> --}}
+              {{!-- <td>&#8377;{{price}}</td> --}}
             </tr>
+
           </tbody>
         </table>
-      </div>
+
+        <div class='header'>
+          <h1>Old Invoice</h1>
+        </div>
+
+        <div class='invoice-details'>
+          <div class='left'>
+            <p class='date'>Date:
+              {{formatDate old_invoice.created_at 'dd-MM-yyyy'}}
+            </p>
+            <p class='invoice-number'>Invoice No :
+              {{old_invoice.invoice_number}}</p>
+            <p class='invoice-number'>OPD No:{{patient.patient_number}}</p>
+          </div>
+
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Sr. No</th>
+              <th>Particulars</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {{#each old_invoice.particulars}}
+              <tr>
+                <td>{{incrementIndex @index}}</td>
+                <td>{{name}}</td>
+                <td>&#8377;{{price}}</td>
+              </tr>
+            {{/each}}
+
+          </tbody>
+        </table>
+
+        <div class='totals'>
+          <table>
+            <tbody>
+              <tr>
+                <th>Total:</th>
+                <td class='total'>&#8377;{{old_invoice.total_amount}}</td>
+              </tr>
+              <tr>
+                <th>Discount:</th>
+                <td class='paid'>&#8377;{{old_invoice.discount}}</td>
+              </tr>
+              <tr>
+                <th>Paid:</th>
+                <td class='paid'>&#8377;{{old_invoice.paid}}</td>
+              </tr>
+              <tr>
+                <th>Balance:</th>
+                <td class='balance'>&#8377;{{old_invoice.balance}}</td>
+              </tr>
+
+              {{#if old_invoice.partial_payment}}
+
+                <tr>
+                  <th>Payment 1:</th>
+                  <td class='balance'>&#8377;{{old_invoice.payment_mode1.price}}
+                    ({{old_invoice.payment_mode1.mode}})</td>
+                </tr>
+                <tr>
+                  <th>Payment 2:</th>
+                  <td class='balance'>&#8377;{{old_invoice.payment_mode2.price}}
+                    ({{old_invoice.payment_mode2.mode}})</td>
+                </tr>
+
+              {{else}}
+                {{#if old_invoice.payment_mode}}
+                  <tr>
+                    <th>Payment Method:</th>
+                    <td class='balance'>{{old_invoice.payment_mode}}</td>
+                  </tr>
+                {{else}}
+                  <tr>
+                    <th>Payment Method:</th>
+                    <td class='balance'>{{old_invoice.payment_mode1.mode}}</td>
+                  </tr>
+                {{/if}}
+              {{/if}}
+
+              <tr>
+                <th>Payment status:</th>
+                <td class='balance'>Paid</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      {{else}}
+
+        <table>
+          <thead>
+            <tr>
+              <th>Sr. No</th>
+              <th>Particulars</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {{#each particulars}}
+              <tr>
+                <td>{{incrementIndex @index}}</td>
+                <td>{{name}}</td>
+                <td>&#8377;{{price}}</td>
+              </tr>
+            {{/each}}
+
+          </tbody>
+        </table>
+
+        <div class='totals'>
+          <table>
+            <tbody>
+              <tr>
+                <th>Total:</th>
+                <td class='total'>&#8377;{{total_amount}}</td>
+              </tr>
+              <tr>
+                <th>Discount:</th>
+                <td class='paid'>&#8377;{{discount}}</td>
+              </tr>
+              <tr>
+                <th>Paid:</th>
+                <td class='paid'>&#8377;{{paid}}</td>
+              </tr>
+              <tr>
+                <th>Balance:</th>
+                <td class='balance'>&#8377;{{balance}}</td>
+              </tr>
+
+              {{#if partial_payment}}
+
+                <tr>
+                  <th>Payment 1:</th>
+                  <td class='balance'>&#8377;{{payment_mode1.price}}
+                    ({{payment_mode1.mode}})</td>
+                </tr>
+                <tr>
+                  <th>Payment 2:</th>
+                  <td class='balance'>&#8377;{{payment_mode2.price}}
+                    ({{payment_mode2.mode}})</td>
+                </tr>
+
+              {{else}}
+                {{#if payment_mode}}
+                  <tr>
+                    <th>Payment Method:</th>
+                    <td class='balance'>{{payment_mode}}</td>
+                  </tr>
+                {{else}}
+                  <tr>
+                    <th>Payment Method:</th>
+                    <td class='balance'>{{payment_mode1.mode}}</td>
+                  </tr>
+                {{/if}}
+              {{/if}}
+
+              <tr>
+                <th>Payment status:</th>
+                <td class='balance'>Paid</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      {{/if}}
 
       <div class='signature'>
         <div class='received-by'>

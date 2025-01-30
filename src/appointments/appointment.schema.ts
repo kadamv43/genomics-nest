@@ -5,7 +5,6 @@ import { Invoice } from 'src/invoice/invoice.schema';
 import { Patient } from 'src/patients/patients.schema';
 import { Product } from 'src/products/product.schema';
 
-
 export type AppointmentDocument = Appointment & Document;
 
 @Schema()
@@ -49,6 +48,13 @@ export class Appointment {
     required: false,
   })
   invoice: Invoice;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Invoice',
+    required: false,
+  })
+  balance_invoice: Invoice;
 
   @Prop({ required: true, trim: true, default: 'Created' })
   status: string;

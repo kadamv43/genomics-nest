@@ -20,5 +20,7 @@ export class UpdateAppointmentDto {
   reason?: string;
   remark?: string;
   invoice?: Invoice;
+  old_invoice?: Invoice;
+  balance_invoice?: Invoice;
   follow_up?: string;
 }

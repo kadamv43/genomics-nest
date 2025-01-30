@@ -19,7 +19,7 @@ export class InvoiceService {
 
   async create(createInvoiceDto: CreateInvoiceDto): Promise<Invoice> {
     console.log(createInvoiceDto);
-    await this.deleteManyByQuery({ appointment: createInvoiceDto.appointment });
+    //await this.deleteManyByQuery({ appointment: createInvoiceDto.appointment });
     const newInvoice = new this.invoiceModel(createInvoiceDto);
     return await newInvoice.save();
   }
@@ -42,6 +42,7 @@ export class InvoiceService {
   async findOne(id: string): Promise<Invoice> {
     const invoice = await this.invoiceModel
       .findById(id)
+      .populate('old_invoice')
       .populate('doctor')
       .populate('patient')
       .exec();
