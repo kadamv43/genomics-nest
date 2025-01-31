@@ -23,4 +23,5 @@ export class UpdateAppointmentDto {
   old_invoice?: Invoice;
   balance_invoice?: Invoice;
   follow_up?: string;
+  doctor_note?: string;
 }

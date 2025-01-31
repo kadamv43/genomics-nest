@@ -15,4 +15,5 @@ export class CreateAppointmentDto {
   remark?: string;
   invoice?: Invoice;
   follow_up?: string;
+  doctor_note?: string;
 }

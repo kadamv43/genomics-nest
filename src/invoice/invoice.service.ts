@@ -32,6 +32,7 @@ export class InvoiceService {
       .populate('appointment')
       .populate('patient')
       .populate('doctor')
+      .sort({ created_at: 'desc' })
       .skip(skip)
       .limit(size)
       .exec();

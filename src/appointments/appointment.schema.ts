@@ -59,6 +59,9 @@ export class Appointment {
   @Prop({ required: true, trim: true, default: 'Created' })
   status: string;
 
+  @Prop({ required: false, trim: true })
+  doctor_note: string;
+
   @Prop({ default: Date.now })
   created_at: Date;
 
