@@ -81,21 +81,23 @@
 
       {{#if old_invoice}}
 
+        <p>Previous Paid Amounts:</p>
         <table>
           <thead>
             <tr>
-              <th>Pendig balance</th>
+              {{! <th>Pendig balance</th> }}
               <th>Paid Amount</th>
+              <th>Date</th>
 
-              {{#ifGreaterThan discount 0}}
+              {{#ifGreaterThan old_invoice.discount 0}}
                 <th>Discount</th>
               {{/ifGreaterThan}}
 
-              {{#if partial_payment}}
+              {{#if old_invoice.partial_payment}}
                 <th>Payment 1</th>
-                <th>Paymnt 2</th>
+                <th>Payment 2</th>
               {{else}}
-                <th>Payment Method</th>
+                <th>Paid By</th>
               {{/if}}
 
               {{! <th>Cheque Amount</th> }}
@@ -104,24 +106,25 @@
           <tbody>
 
             <tr>
-              <td>{{total_amount}}</td>
-              <td>{{paid}}</td>
 
-              {{#ifGreaterThan discount 0}}
-                <td>{{discount}}</td>
+              <td>{{old_invoice.paid}}</td>
+              <td> {{formatDate old_invoice.created_at 'dd-MM-yyyy'}}</td>
+
+              {{#ifGreaterThan old_invoice.discount 0}}
+                <td>{{old_invoice.discount}}</td>
               {{/ifGreaterThan}}
-              {{#if partial_payment}}
-                <td>&#8377;{{payment_mode1.price}}
-                  ({{payment_mode1.mode}})</td>
-                <td>&#8377;{{payment_mode2.price}}
-                  ({{payment_mode2.mode}})</td>
+              {{#if old_invoice.partial_payment}}
+                <td>&#8377;{{old_invoice.payment_mode1.price}}
+                  ({{old_invoice.payment_mode1.mode}})</td>
+                <td>&#8377;{{old_invoice.payment_mode2.price}}
+                  ({{old_invoice.payment_mode2.mode}})</td>
               {{else}}
 
-                {{#if payment_mode}}
+                {{#if old_invoice.payment_mode}}
 
-                  <td>{{payment_mode}}</td>
+                  <td>{{old_invoice.payment_mode}}</td>
                 {{else}}
-                  <td>{{payment_mode1.mode}}</td>
+                  <td>{{old_invoice.payment_mode1.mode}}</td>
                 {{/if}}
 
               {{/if}}
@@ -133,19 +136,19 @@
           </tbody>
         </table>
 
-        <div class='header'>
+        {{! <div class='header'>
           <h1>Old Invoice</h1>
-        </div>
+        </div> }}
 
         <div class='invoice-details'>
-          <div class='left'>
+          {{!-- <div class='left'>
             <p class='date'>Date:
               {{formatDate old_invoice.created_at 'dd-MM-yyyy'}}
             </p>
             <p class='invoice-number'>Invoice No :
               {{old_invoice.invoice_number}}</p>
             <p class='invoice-number'>OPD No:{{patient.patient_number}}</p>
-          </div>
+          </div> --}}
 
         </div>
         <table>
@@ -178,40 +181,40 @@
               </tr>
               <tr>
                 <th>Discount:</th>
-                <td class='paid'>&#8377;{{old_invoice.discount}}</td>
+                <td class='paid'>&#8377;{{discount}}</td>
               </tr>
               <tr>
                 <th>Paid:</th>
-                <td class='paid'>&#8377;{{old_invoice.paid}}</td>
+                <td class='paid'>&#8377;{{paid}}</td>
               </tr>
               <tr>
                 <th>Balance:</th>
-                <td class='balance'>&#8377;{{old_invoice.balance}}</td>
+                <td class='balance'>&#8377;{{balance}}</td>
               </tr>
 
-              {{#if old_invoice.partial_payment}}
+              {{#if partial_payment}}
 
                 <tr>
                   <th>Payment 1:</th>
-                  <td class='balance'>&#8377;{{old_invoice.payment_mode1.price}}
-                    ({{old_invoice.payment_mode1.mode}})</td>
+                  <td class='balance'>&#8377;{{payment_mode1.price}}
+                    ({{payment_mode1.mode}})</td>
                 </tr>
                 <tr>
                   <th>Payment 2:</th>
-                  <td class='balance'>&#8377;{{old_invoice.payment_mode2.price}}
-                    ({{old_invoice.payment_mode2.mode}})</td>
+                  <td class='balance'>&#8377;{{payment_mode2.price}}
+                    ({{payment_mode2.mode}})</td>
                 </tr>
 
               {{else}}
-                {{#if old_invoice.payment_mode}}
+                {{#if payment_mode}}
                   <tr>
                     <th>Payment Method:</th>
-                    <td class='balance'>{{old_invoice.payment_mode}}</td>
+                    <td class='balance'>{{payment_mode}}</td>
                   </tr>
                 {{else}}
                   <tr>
                     <th>Payment Method:</th>
-                    <td class='balance'>{{old_invoice.payment_mode1.mode}}</td>
+                    <td class='balance'>{{payment_mode1.mode}}</td>
                   </tr>
                 {{/if}}
               {{/if}}
