@@ -13,6 +13,7 @@ import {
   UploadedFile,
   UseInterceptors,
   BadRequestException,
+  Req,
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
@@ -25,8 +26,10 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { EmailModule } from 'src/email/email.module';
 import { EmailService } from 'src/email/email.service';
+import { format, formatDate } from 'date-fns';
+import { Request } from 'express';
 
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('patients')
 export class PatientsController {
   prefix = 'PATIENT-';
@@ -129,8 +132,29 @@ export class PatientsController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<Patient> {
-    return this.patientsService.remove(id);
+  async remove(@Param('id') id: string, @Req() req: Request): Promise<Patient> {
+    const deletedPatient = await this.patientsService.remove(id);
+
+    const subject = `Patient Deleted OPD (${deletedPatient.patient_number})`;
+
+    const newData = this.modifyPatientData(deletedPatient);
+    newData['deleted_by'] =
+      `${req.user['first_name']} ${req.user['last_name']}`;
+    newData['deleted_at'] = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+
+    this.emailService
+      .sendMailTemplateToAdmin(subject, newData, './delete_patient')
+      .catch((err) => console.error('Email sending error:', err));
+
+    return deletedPatient;
+  }
+
+  modifyPatientData(data) {
+    let newData = {};
+    newData['opd'] = data?.patient_number;
+    newData['patient'] = data?.first_name + ' ' + data?.last_name;
+    newData['mobile'] = data?.mobile;
+    return newData;
   }
 
   @Patch('reports/:id')

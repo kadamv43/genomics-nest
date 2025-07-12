@@ -25,19 +25,85 @@ export class InvoiceService {
   }
 
   async findAll(params) {
-    const size = params.size;
-    const skip = params.page * params.size;
-    const invoices = await this.invoiceModel
-      .find()
-      .populate('appointment')
-      .populate('patient')
-      .populate('doctor')
-      .sort({ created_at: 'desc' })
-      .skip(skip)
-      .limit(size)
-      .exec();
-    const totalRecords = await this.invoiceModel.countDocuments().exec();
-    return { data: invoices, total: totalRecords };
+    const size = parseInt(params.size) || 10;
+    const page = parseInt(params.page) || 0;
+    const skip = page * size;
+
+    const search = params.q?.trim();
+    const regex = search ? new RegExp(search, 'i') : null;
+
+    const pipeline: any[] = [];
+
+    // Join appointment
+    pipeline.push({
+      $lookup: {
+        from: 'appointments',
+        localField: 'appointment',
+        foreignField: '_id',
+        as: 'appointment',
+      },
+    });
+
+    pipeline.push({
+      $unwind: { path: '$appointment', preserveNullAndEmptyArrays: true },
+    });
+
+    // Join patient
+    pipeline.push({
+      $lookup: {
+        from: 'patients',
+        localField: 'patient',
+        foreignField: '_id',
+        as: 'patient',
+      },
+    });
+
+    pipeline.push({
+      $unwind: { path: '$patient', preserveNullAndEmptyArrays: true },
+    });
+
+    // Join doctor (optional)
+    pipeline.push({
+      $lookup: {
+        from: 'doctors',
+        localField: 'doctor',
+        foreignField: '_id',
+        as: 'doctor',
+      },
+    });
+
+    pipeline.push({
+      $unwind: { path: '$doctor', preserveNullAndEmptyArrays: true },
+    });
+
+    // If search query exists
+    if (regex) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { invoice_number: { $regex: regex } },
+            { 'appointment.appointment_number': { $regex: regex } },
+            { 'patient.first_name': { $regex: regex } },
+            { 'patient.last_name': { $regex: regex } },
+            // Add more fields if needed
+          ],
+        },
+      });
+    }
+
+    // Total count
+    const countPipeline = [...pipeline, { $count: 'total' }];
+    const totalCountResult = await this.invoiceModel.aggregate(countPipeline);
+    const total = totalCountResult[0]?.total || 0;
+
+    // Pagination & Sorting
+    pipeline.push({ $sort: { created_at: -1 } });
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: size });
+
+    const data = await this.invoiceModel.aggregate(pipeline);
+
+    return { data, total };
   }
 
   async findOne(id: string): Promise<Invoice> {
