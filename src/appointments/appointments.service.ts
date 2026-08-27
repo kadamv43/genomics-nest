@@ -118,7 +118,7 @@ export class AppointmentsService {
       .populate('invoice')
       .populate('services')
       .sort({ created_at: 'desc' })
-      .limit(5)
+      // .limit(5)
       .exec();
 
     return {
