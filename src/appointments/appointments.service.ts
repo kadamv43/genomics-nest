@@ -111,6 +111,7 @@ export class AppointmentsService {
   async findByPatienId(id: string) {
     const patient = await this.patientService.findOne(id);
     // console.log('mob',mobile)
+    
     const appointments = await this.appointmentModel
       .find({ patient: id })
       .populate('patient')
