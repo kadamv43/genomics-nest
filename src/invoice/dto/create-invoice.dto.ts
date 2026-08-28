@@ -15,5 +15,6 @@ export class CreateInvoiceDto {
   file?: string;
   old_invoice?: string;
   balance_paid?: boolean;
+  already_paid?: boolean;
   readonly particulars: { name: string; price: number }[];
 }

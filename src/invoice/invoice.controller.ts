@@ -104,6 +104,11 @@ export class InvoiceController {
     return this.invoicesService.findBy({ balance_paid: false });
   }
 
+  @Get('by-patient/:patientId')
+  getByPatient(@Param('patientId') patientId: string) {
+    return this.invoicesService.findBy({ patient: patientId });
+  }
+
   @Get('pre-post-charges')
   prePostCharges() {
     return [
