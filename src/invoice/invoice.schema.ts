@@ -59,6 +59,9 @@ export class Invoice {
   @Prop({ required: false })
   balance_paid: boolean;
 
+  @Prop({ required: false, default: false })
+  already_paid: boolean;
+
   @Prop({ type: Object, required: false })
   payment_mode1: { mode: string; price: number };
 
