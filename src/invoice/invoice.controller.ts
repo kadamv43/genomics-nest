@@ -13,6 +13,7 @@ import {
   Patch,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
@@ -38,6 +39,15 @@ export class InvoiceController {
     @Req() req: any,
     @Body() createInvoiceDto: CreateInvoiceDto,
   ): Promise<Invoice> {
+    if (
+      Number(createInvoiceDto.total_amount) <= 0 ||
+      Number(createInvoiceDto.paid) < 0
+    ) {
+      throw new BadRequestException(
+        'Invoice amount must be greater than 0.',
+      );
+    }
+
     console.log(req.user);
     createInvoiceDto.invoice_number =
       await this.invoicesService.generateUniqueInvoiceNumber();
@@ -67,7 +77,14 @@ export class InvoiceController {
     @Req() req: any,
     @Body() createInvoiceDto: CreateInvoiceDto,
   ): Promise<Invoice> {
-    console.log(req.user);
+    if (
+      Number(createInvoiceDto.total_amount) <= 0 ||
+      Number(createInvoiceDto.paid) <= 0
+    ) {
+      throw new BadRequestException(
+        'Invoice amount must be greater than 0.',
+      );
+    }
     createInvoiceDto.invoice_number =
       await this.invoicesService.generateUniqueInvoiceNumber();
     createInvoiceDto.received_by = `${req.user?.first_name}  ${req.user?.last_name}`;
