@@ -39,14 +39,7 @@ export class InvoiceController {
     @Req() req: any,
     @Body() createInvoiceDto: CreateInvoiceDto,
   ): Promise<Invoice> {
-    if (
-      Number(createInvoiceDto.total_amount) <= 0 ||
-      Number(createInvoiceDto.paid) < 0
-    ) {
-      throw new BadRequestException(
-        'Invoice amount must be greater than 0.',
-      );
-    }
+    this.validateInvoiceAmounts(createInvoiceDto);
 
     console.log(req.user);
     createInvoiceDto.invoice_number =
@@ -77,14 +70,26 @@ export class InvoiceController {
     @Req() req: any,
     @Body() createInvoiceDto: CreateInvoiceDto,
   ): Promise<Invoice> {
-    if (
-      Number(createInvoiceDto.total_amount) <= 0 ||
-      Number(createInvoiceDto.paid) <= 0
-    ) {
-      throw new BadRequestException(
-        'Invoice amount must be greater than 0.',
-      );
+    if (!createInvoiceDto.old_invoice) {
+      throw new BadRequestException('A pending invoice reference is required.');
     }
+
+    const originalInvoice: any = await this.invoicesService.findOne(
+      createInvoiceDto.old_invoice,
+    );
+    const pendingAmount = Number(originalInvoice.balance) - Number(createInvoiceDto.discount ?? 0);
+
+    if (
+      originalInvoice.balance_paid ||
+      pendingAmount <= 0 ||
+      !this.amountsMatch(createInvoiceDto.total_amount, originalInvoice.balance) ||
+      !this.amountsMatch(createInvoiceDto.paid, pendingAmount) ||
+      !this.amountsMatch(createInvoiceDto.balance, 0)
+    ) {
+      throw new BadRequestException('Payment must exactly match the pending invoice amount.');
+    }
+
+    this.validatePaymentModes(createInvoiceDto, true);
     createInvoiceDto.invoice_number =
       await this.invoicesService.generateUniqueInvoiceNumber();
     createInvoiceDto.received_by = `${req.user?.first_name}  ${req.user?.last_name}`;
@@ -155,6 +160,7 @@ export class InvoiceController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async updatePartial(
     @Param('id') id: string,
@@ -165,6 +171,26 @@ export class InvoiceController {
   ): Promise<Invoice> {
     if (file) {
       updateInvoiceDto.file = 'invoice/' + file.filename;
+    }
+
+    const existingInvoice: any = await this.invoicesService.findOne(id);
+    const updatedValues = {
+      ...(existingInvoice.toObject?.() ?? existingInvoice),
+      ...updateInvoiceDto,
+    };
+    const financialFields = [
+      'total_amount',
+      'paid',
+      'balance',
+      'discount',
+      'payment_mode1',
+      'payment_mode2',
+      'partial_payment',
+      'already_paid',
+    ];
+
+    if (financialFields.some((field) => field in updateInvoiceDto)) {
+      this.validateInvoiceAmounts(updatedValues);
     }
 
     const res = await this.invoicesService.update(id, updateInvoiceDto);
@@ -188,6 +214,7 @@ export class InvoiceController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string): Promise<void> {
     return this.invoicesService.remove(id);
   }
@@ -204,5 +231,75 @@ export class InvoiceController {
       data?.patient?.first_name + ' ' + data?.patient?.last_name;
     newData['opd_no'] = data?.patient?.patient_number;
     return newData;
+  }
+
+  private validateInvoiceAmounts(invoice: any): void {
+    const total = Number(invoice.total_amount);
+    const discount = Number(invoice.discount ?? 0);
+    const paid = Number(invoice.paid);
+    const balance = Number(invoice.balance);
+    const payableAmount = total - discount;
+
+    if (
+      !Number.isFinite(total) ||
+      !Number.isFinite(discount) ||
+      !Number.isFinite(paid) ||
+      !Number.isFinite(balance) ||
+      total <= 0 ||
+      discount < 0 ||
+      discount > total ||
+      paid < 0 ||
+      paid > payableAmount ||
+      !this.amountsMatch(balance, payableAmount - paid)
+    ) {
+      throw new BadRequestException('Invoice amounts are invalid.');
+    }
+
+    this.validatePaymentModes(invoice, Boolean(invoice.already_paid));
+  }
+
+  private validatePaymentModes(invoice: any, requirePayment: boolean): void {
+    if (invoice.already_paid) {
+      if (!invoice.old_invoice) {
+        throw new BadRequestException('Select the invoice where the amount was already paid.');
+      }
+      return;
+    }
+
+    const paymentModes = [invoice.payment_mode1, invoice.payment_mode2].filter(
+      (paymentMode) => paymentMode?.mode,
+    );
+    const paid = Number(invoice.paid);
+
+    if (!paymentModes.length) {
+      throw new BadRequestException('A payment method is required.');
+    }
+
+    const hasImmediatePayment = paymentModes.some(
+      (paymentMode) => paymentMode.mode !== 'Pay Later',
+    );
+    const paymentTotal = paymentModes.reduce(
+      (total, paymentMode) => total + Number(paymentMode.price),
+      0,
+    );
+
+    if (
+      paymentModes.some(
+        (paymentMode) =>
+          !Number.isFinite(Number(paymentMode.price)) ||
+          Number(paymentMode.price) < 0 ||
+          (paymentMode.mode === 'Pay Later' && Number(paymentMode.price) !== 0),
+      ) ||
+      (hasImmediatePayment && paid <= 0) ||
+      (!hasImmediatePayment && paid !== 0) ||
+      (requirePayment && !hasImmediatePayment) ||
+      !this.amountsMatch(paymentTotal, paid)
+    ) {
+      throw new BadRequestException('Payment method amounts must match the paid amount.');
+    }
+  }
+
+  private amountsMatch(firstAmount: any, secondAmount: any): boolean {
+    return Math.abs(Number(firstAmount) - Number(secondAmount)) < 0.01;
   }
 }
