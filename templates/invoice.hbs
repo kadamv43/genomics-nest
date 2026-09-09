@@ -279,7 +279,11 @@
 
               <tr>
                 <th>Payment status:</th>
-                <td class='balance'>Paid</td>
+                {{#ifGreaterThan balance 0}}
+                  <td class='balance'>Pending</td>
+                {{else}}
+                  <td class='balance'>Paid</td>
+                {{/ifGreaterThan}}
               </tr>
             </tbody>
           </table>
@@ -357,7 +361,11 @@
 
               <tr>
                 <th>Payment status:</th>
-                <td class='balance'>Paid</td>
+                {{#ifGreaterThan balance 0}}
+                  <td class='balance'>Pending</td>
+                {{else}}
+                  <td class='balance'>Paid</td>
+                {{/ifGreaterThan}}
               </tr>
             </tbody>
           </table>
