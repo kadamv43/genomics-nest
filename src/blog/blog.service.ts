@@ -15,26 +15,29 @@ export class BlogService {
   }
 
   async findAll(params) {
-    const size = params.size;
-    const skip = params.page * params.size;
+    const size = parseInt(params.size) || 10;
+    const page = parseInt(params.page) || 0;
+    const skip = page * size;
 
-    let query = {};
+    const query: Record<string, any> = {};
+    if (params.status) {
+      query.status = params.status;
+    }
     if (params.q) {
-      const regex = new RegExp(params.q, 'i'); // 'i' makes it case-insensitive
-      query = {
-        $or: [
-          { first_name: { $regex: regex } },
-          { last_name: { $regex: regex } },
-          { email: { $regex: regex } },
-        ],
+      query.title = {
+        $regex: new RegExp(
+          String(params.q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+          'i',
+        ),
       };
     }
     const blogs = await this.blogModel
       .find(query)
+      .sort({ created_at: -1 })
       .skip(skip)
       .limit(size)
       .exec();
-    const totalRecords = await this.blogModel.countDocuments().exec();
+    const totalRecords = await this.blogModel.countDocuments(query).exec();
     return { data: blogs, total: totalRecords };
   }
 
