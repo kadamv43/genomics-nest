@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { CreateContactDetailDto } from './dto/create-contact-details.dto';
 import { ContactDetailsService } from './contact-details.service';
 import { ContactDetail } from './contact-detail.schema';
@@ -8,6 +9,7 @@ import { UpdateContactDetailDto } from './dto/update-contact-details.dto';
 export class ContactDetailsController {
   constructor(private readonly contactDetailsService: ContactDetailsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() createDoctorDto: CreateContactDetailDto) {
     return this.contactDetailsService.create(createDoctorDto).catch((err) => {
@@ -30,6 +32,7 @@ export class ContactDetailsController {
     return this.contactDetailsService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -38,11 +41,13 @@ export class ContactDetailsController {
     return this.contactDetailsService.update(id, updateDoctorDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.contactDetailsService.remove(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   updatePartial(
     @Param('id') id: string,

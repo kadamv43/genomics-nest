@@ -11,7 +11,9 @@ import {
   UseInterceptors,
   Query,
   Patch,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { GalleryService } from './gallery.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateGalleryDto } from './dto/update-gallery.dto';
@@ -20,6 +22,7 @@ import { UpdateGalleryDto } from './dto/update-gallery.dto';
 export class GalleryController {
   constructor(private readonly blogService: GalleryService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async createBlog(@Body() body, @UploadedFile() file: Express.Multer.File) {
@@ -37,6 +40,7 @@ export class GalleryController {
     return this.blogService.getBlogById(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
   async update(
@@ -46,11 +50,13 @@ export class GalleryController {
     return this.blogService.update(id, updateDoctorDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.blogService.remove(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @UseInterceptors(FileInterceptor('image'))
   updatePartial(

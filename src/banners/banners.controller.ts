@@ -10,7 +10,9 @@ import {
   Query,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { BannersService } from './banners.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateBannerDto } from './dto/update-banner.dto';
@@ -19,6 +21,7 @@ import { UpdateBannerDto } from './dto/update-banner.dto';
 export class BannersController {
   constructor(private readonly bannerService: BannersService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async createBlog(@Body() body, @UploadedFile() file: Express.Multer.File) {
@@ -36,6 +39,7 @@ export class BannersController {
     return this.bannerService.getBlogById(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
   async update(
@@ -50,11 +54,13 @@ export class BannersController {
     return this.bannerService.update(id, updateDoctorDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.bannerService.remove(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @UseInterceptors(FileInterceptor('image'))
   updatePartial(

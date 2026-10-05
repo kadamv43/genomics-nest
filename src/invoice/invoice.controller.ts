@@ -25,6 +25,8 @@ import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { EmailService } from 'src/email/email.service';
 
+// Every invoice route (reads and writes) requires a logged-in user.
+@UseGuards(JwtAuthGuard)
 @Controller('invoice')
 export class InvoiceController {
   constructor(
@@ -33,7 +35,6 @@ export class InvoiceController {
     private emailService: EmailService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
   async create(
     @Req() req: any,
@@ -64,7 +65,6 @@ export class InvoiceController {
     return invoice;
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('balance')
   async createBalance(
     @Req() req: any,
@@ -160,7 +160,6 @@ export class InvoiceController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async updatePartial(
     @Param('id') id: string,
@@ -214,7 +213,6 @@ export class InvoiceController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string): Promise<void> {
     return this.invoicesService.remove(id);
   }

@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UploadedFiles, UseInterceptors, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { GalleryImagesService } from './gallery-images.service';
 import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
@@ -11,6 +12,7 @@ export class GalleryImagesController {
     return this.galleryImageService.findAll(query);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post(':id')
   @UseInterceptors(FilesInterceptor('files'))
   async createGalleryImages(
@@ -31,6 +33,7 @@ export class GalleryImagesController {
     return this.galleryImageService.getImagesByGalleryId(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.galleryImageService.remove(id);
