@@ -13,13 +13,15 @@ export class ActionLogsController {
 
   @Get()
   @Roles(Role.Admin, Role.SuperAdmin)
-  findAll(@Query() query: Record<string, any>) {
+  findAll(
+    @Query() query: Record<string, any>,
+  ): Promise<{ data: any[]; total: number }> {
     return this.actionLogsService.findAll(query);
   }
 
   @Get(':id')
   @Roles(Role.Admin, Role.SuperAdmin)
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Promise<any> {
     return this.actionLogsService.findOne(id);
   }
 }

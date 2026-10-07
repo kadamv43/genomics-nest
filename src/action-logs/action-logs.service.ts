@@ -21,7 +21,9 @@ export class ActionLogsService {
     }
   }
 
-  async findAll(params: Record<string, any>) {
+  async findAll(
+    params: Record<string, any>,
+  ): Promise<{ data: any[]; total: number }> {
     const size = Math.min(parseInt(params.size) || 10, 100);
     const page = parseInt(params.page) || 0;
 
@@ -71,7 +73,7 @@ export class ActionLogsService {
     return { data, total };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<any> {
     const log = await this.actionLogModel.findById(id).lean().exec();
     if (!log) throw new NotFoundException(`Action log ${id} not found`);
     return log;
